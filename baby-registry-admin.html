@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔐 Admin – Lista de Bebé de Paula y Nas</title>
+  <style>
+    :root {
+      --sage:    #7a9e87;
+      --sage-lt: #b8d4c0;
+      --cream:   #fdf8f2;
+      --sand:    #f0e6d3;
+      --text:    #3a3530;
+      --muted:   #8a7f76;
+      --card:    #ffffff;
+      --paid-bg: #d4edda;
+      --paid-fg: #2d6a4f;
+      --reset-bg:#fff3cd;
+      --reset-fg:#856404;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+           background: var(--cream); color: var(--text); min-height: 100vh; }
+
+    /* ── LOGIN SCREEN ─────────────────────────────────── */
+    #loginScreen {
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; padding: 24px;
+      background: linear-gradient(135deg, #7a9e87, #5d8570);
+    }
+    .login-box {
+      background: #fff; border-radius: 20px;
+      padding: 40px 32px; max-width: 380px; width: 100%;
+      text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    .login-box .lock { font-size: 3rem; margin-bottom: 12px; }
+    .login-box h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+    .login-box p  { font-size: .85rem; color: var(--muted); margin-bottom: 24px; }
+    .login-box input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid #e0e0e0;
+      border-radius: 10px; font-size: 1rem; outline: none;
+      margin-bottom: 14px; letter-spacing: .15em; text-align: center;
+    }
+    .login-box input:focus { border-color: var(--sage); }
+    .btn-login {
+      width: 100%; padding: 13px; background: var(--sage); color: #fff;
+      border: none; border-radius: 10px; font-size: 1rem;
+      font-weight: 700; cursor: pointer; transition: background .2s;
+    }
+    .btn-login:hover { background: #5d8570; }
+    .login-error {
+      color: #c62828; font-size: .82rem; margin-top: 10px; display: none;
+    }
+
+    /* ── ADMIN CONTENT ────────────────────────────────── */
+    #adminContent { display: block; }
+
+    .admin-hero {
+      background: linear-gradient(135deg, #3a3530, #5d4e47);
+      color: #fff; padding: 28px 24px; text-align: center;
+    }
+    .admin-hero h1 { font-size: 1.4rem; font-weight: 700; }
+    .admin-hero p  { font-size: .85rem; opacity: .7; margin-top: 6px; }
+    .admin-badge {
+      display: inline-block; background: #e53935; color: #fff;
+      font-size: .65rem; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; padding: 3px 10px;
+      border-radius: 99px; margin-bottom: 10px;
+    }
+
+    /* ── TOOLBAR ──────────────────────────────────────── */
+    .toolbar {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      padding: 16px 20px; background: var(--sand);
+      border-bottom: 1px solid #e5d9c8; align-items: center;
+    }
+    .toolbar span { font-size: .85rem; color: var(--muted); margin-right: auto; font-weight: 600; }
+    .btn-tool {
+      padding: 8px 18px; border: none; border-radius: 8px;
+      font-size: .82rem; font-weight: 600; cursor: pointer; transition: opacity .2s;
+    }
+    .btn-tool:hover { opacity: .85; }
+    .btn-mark-all  { background: var(--paid-fg);  color: #fff; }
+    .btn-reset-all { background: var(--reset-fg); color: #fff; }
+
+    /* ── PROGRESS ─────────────────────────────────────── */
+    .progress-wrap {
+      background: var(--sand); border-bottom: 1px solid #e5d9c8;
+      padding: 16px 24px; text-align: center;
+    }
+    .progress-bar-track {
+      max-width: 600px; margin: 0 auto 8px;
+      height: 10px; background: #ddd; border-radius: 99px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; width: 0%; background: linear-gradient(90deg, var(--sage), var(--sage-lt));
+      border-radius: 99px; transition: width .4s ease;
+    }
+    .progress-text { font-size: .85rem; color: var(--text); font-weight: 600; }
+
+    /* ── GRID ─────────────────────────────────────────── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px; max-width: 1100px; margin: 28px auto; padding: 0 20px;
+    }
+
+    /* ── CARD ─────────────────────────────────────────── */
+    .card {
+      background: var(--card); border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      overflow: hidden; display: flex; flex-direction: column;
+      border: 2px solid transparent; transition: border-color .2s;
+    }
+    .card.gifted { border-color: var(--paid-fg); }
+
+    .card-img {
+      height: 200px; background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      border-bottom: 1px solid #f0ece6; padding: 16px;
+      position: relative;
+    }
+    .card-img img {
+      max-width: 100%; max-height: 100%;
+      width: auto; height: auto; object-fit: contain;
+    }
+    .card-img .emoji-fallback { font-size: 3rem; }
+
+    .gifted-badge {
+      display: none; position: absolute; top: 10px; left: 10px;
+      background: var(--paid-fg); color: #fff; font-size: .68rem;
+      font-weight: 800; padding: 4px 10px; border-radius: 99px;
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .card.gifted .gifted-badge { display: block; }
+
+    .card-body { padding: 14px 16px; flex: 1; }
+    .card-brand { font-size: .68rem; font-weight: 700; text-transform: uppercase;
+                  letter-spacing: .08em; color: var(--sage); }
+    .card-name  { font-size: .9rem; font-weight: 600; color: var(--text);
+                  line-height: 1.35; margin-top: 3px; }
+    .card-price { font-size: 1.2rem; font-weight: 800; color: var(--sage); margin-top: 4px; }
+
+    /* ── ADMIN CONTROLS ───────────────────────────────── */
+    .card-admin {
+      padding: 12px 14px; display: flex; gap: 8px;
+      border-top: 1px solid #f0ece6;
+    }
+    .btn-gift {
+      flex: 1; padding: 10px; border: none; border-radius: 8px;
+      font-size: .82rem; font-weight: 700; cursor: pointer;
+      background: var(--paid-fg); color: #fff; transition: opacity .2s;
+    }
+    .btn-gift:hover { opacity: .85; }
+    .btn-reset {
+      flex: 1; padding: 10px; border: none; border-radius: 8px;
+      font-size: .82rem; font-weight: 700; cursor: pointer;
+      background: var(--reset-bg); color: var(--reset-fg);
+      border: 1px solid #f0c040; transition: opacity .2s;
+    }
+    .btn-reset:hover { opacity: .85; }
+    .card.gifted .btn-gift  { opacity: .35; pointer-events: none; }
+    .card:not(.gifted) .btn-reset { opacity: .35; pointer-events: none; }
+
+    footer {
+      text-align: center; padding: 20px;
+      font-size: .75rem; color: var(--muted);
+      border-top: 1px solid #e5ddd0;
+    }
+
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── ADMIN CONTENT ──────────────────────────────────────── -->
+<div id="adminContent">
+
+  <div class="admin-hero">
+    <div class="admin-badge">Admin</div>
+    <h1>🛠️ Panel de Administrador</h1>
+    <p>Lista de Bebé de Paula y Nas · Gestión de artículos</p>
+  </div>
+
+  <div class="toolbar">
+    <span id="toolbarStatus">Cargando…</span>
+    <button class="btn-tool btn-mark-all" onclick="markAll()">✅ Marcar todos como regalados</button>
+    <button class="btn-tool btn-reset-all" onclick="resetAll()">🔄 Resetear todos</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText"></div>
+  </div>
+
+  <div class="grid" id="itemsGrid"></div>
+
+  <footer>
+    Panel de administrador · Lista de Bebé de Paula y Nas 🌿
+    &nbsp;·&nbsp;
+    <a href="baby-registry.html" style="color:var(--sage);text-decoration:none;">
+      Ver lista pública →
+    </a>
+  </footer>
+
+</div>
+
+<script>
+  // ── Data ───────────────────────────────────────────────────
+  const BASE = "https://www.bebecenter.es/";
+  const items = [
+    { id:1,  brand:"Pasito a Pasito", name:"Bolsa Canastilla Icon Cream",                  price:79.90, emoji:"👜", img:"42390-large_default/bolsa-canastilla-icon-cream.jpg" },
+    { id:2,  brand:"Walking Mum",     name:"Bolsa Crossbody Caetana Sand",                 price:29.90, emoji:"👜", img:"40269-large_default/bolso-para-carrito-crossbody-walking-mum-caetana-sand.jpg" },
+    { id:3,  brand:"Bimbidreams",     name:"Interior Capazo Carro – Matalasé Blanco",      price:42.90, emoji:"🛒", img:"26459-large_default/edredoncojin-interior-acolchado-colchon-capazo-conejo-verde-musgo.jpg" },
+    { id:4,  brand:"Bimbidreams",     name:"Saco Arrullo con Capucha – Blue Sky",          price:47.80, emoji:"👶", img:"46794-superlarge_default/cambiador-ajustable-50x70-rizo-cornelia-verde.jpg" },
+    { id:5,  brand:"Walking Mum",     name:"Saco Silla Entretiempo Praline/Matcha",        price:99.50, emoji:"🪑", img:"33540-large_default/saco-para-silla-mimosa-entretiempo-rosa.jpg" },
+    { id:6,  brand:"Bimbidreams",     name:"Funda Nórdica + Relleno Minicuna – Blue Sky", price:41.90, emoji:"🛏️", img:"46536-large_default/funda-nordica-relleno-minicuna-80x100cm-cornelia.jpg" },
+    { id:7,  brand:"Momcozy",         name:"Lima Eléctrica para Uñas de Bebé NC02",        price:29.99, emoji:"💅", img:"36857-large_default/lima-de-unas-electrica-tommee-tippee.jpg" },
+    { id:8,  brand:"Pasito a Pasito", name:"Sábana Ajustable Cuco + Muselina Nara",        price:39.90, emoji:"🛏️", img:"45450-large_default/sabana-ajustable-cuco-muselina-nara.jpg" },
+    { id:9,  brand:"Bimbidreams",     name:"Manta Embossed 80×110 cm – Verde",            price:23.80, emoji:"🧸", img:"21975-large_default/manta-crochet-100-algodon-95x75cm-lino.jpg" },
+    { id:10, brand:"Bimbidreams",     name:"Toquilla Tricot 75×90 cm – Bambú Beige",      price:31.90, emoji:"🧣", img:"46833-large_default/toquilla-tricot-75x90cm-bambu-blanco.jpg" },
+    { id:11, brand:"Sonpetit",        name:"Arrullo Cometas – Algodón Orgánico",           price:32.95, emoji:"☁️", img:"44640-large_default/arrullo-cotton-algodon-organico.jpg" },
+    { id:12, brand:"Cambrass",        name:"Bajera Ajustable Minicuna 50×90 – Blanco",    price:16.50, emoji:"🛏️", img:"16093-large_default/bajera-ajustable-impermeable-tencel-minicuna-50x90x1cm-liso-e-blanco.jpg" },
+    { id:13, brand:"Cambrass",        name:"Bajera Ajustable Cuna 60×120 – Blanco",       price:20.10, emoji:"🛏️", img:"10433-large_default/bajera-ajustable-impermeable-tencel-c60-60x120-cm-liso-e-blanco.jpg" },
+    { id:14, brand:"Jane",            name:"Esponja Natural (pack 2)",                     price:7.95,  emoji:"🛁", img:"5460-large_default/esponja-natural-2-uds-jane.jpg" },
+    { id:15, brand:"Suavinex",        name:"Chupete ZeroZero Silicona -2/+2M",             price:9.25,  emoji:"🍬", img:"44861-large_default/chupete-fisiologico-de-silicona-100-suavinex-sx-pro-mariposa-azul-0-6-meses.jpg" },
+    { id:16, brand:"Minicoton",       name:"Basket Rayas – Blue + Sand",                   price:99.90, emoji:"🧺", img:"https://minicoton.com/cdn/shop/files/670175-1_lyQuopE-d.png?v=1752434454&width=1400" },
+    { id:17, brand:"Minicoton",       name:"Crudo Muslin Fitted Sheet",                    price:19.90, emoji:"🛏️", img:"https://minicoton.com/cdn/shop/files/153971-1_phKRJ0aPi.jpg?v=1752435724&width=1400" },
+    { id:18, brand:"Minicoton",       name:"Bajera Bambula Blanca",                        price:19.90, emoji:"🛏️", img:"https://minicoton.com/cdn/shop/files/153963-1_mqZt3-Kz1A.jpg?v=1752435621&width=1400" },
+    { id:19, brand:"Zara Home",       name:"Lámpara Quitamiedos Infantil Oso",             price:12.99, emoji:"🐻", img:"https://static.zarahome.net/assets/public/a49d/5fd8/e0744cf2b7cd/e3e644aa7061/42682763450-p1/42682763450-p1.jpg?ts=1742990028671&f=auto&w=957&f=auto" },
+    { id:20, brand:"Zara Home",       name:"Cesta Ondas Mediana",                          price:19.99, emoji:"🧺", img:"https://static.zarahome.net/assets/public/6017/4dbd/70954490b492/875ebb04b764/46670049052-p1/46670049052-p1.jpg?ts=1770217770708&f=auto&w=957&f=auto" },
+    { id:21, brand:"Zara Home",       name:"Toalla Baño Capucha Bebé Estrellas",           price:19.99, emoji:"🛁", img:"https://static.zarahome.net/assets/public/30a9/c5e6/49594e9d8553/adc6c8531f4d/46640423251-p1/46640423251-p1.jpg?ts=1721748356952&f=auto&w=957&f=auto" },
+    { id:22, brand:"Zara Home",       name:"Manta Polar Bebé Algodón",                     price:19.99, emoji:"🧸", img:"https://static.zarahome.net/assets/public/8f77/2aa0/d3724f469f05/7612d34db194/41608004500-a7/41608004500-a7.jpg?ts=1771919163337&f=auto&w=479" },
+    { id:23, brand:"Zara Home",       name:"Manta Bebé Algodón Puntos",                    price:25.99, emoji:"🧸", img:"https://static.zarahome.net/assets/public/28e6/6f95/50bd4956b616/fdf87d1e5467/41605004712-a7/41605004712-a7.jpg?ts=1773313536918&f=auto&w=479" },
+    { id:24, brand:"Micuna",          name:"Kit Colecho",                                  price:85.00, emoji:"🛏️", img:"https://bebesvictoria.es/131924-large_default/kit-colecho-cp-2007-be2in-cuna-con-puente-micuna.webp" },
+    { id:25, brand:"Joie",            name:"Hamaca Dreamer de Joie",                       price:108.99,emoji:"👶", img:"https://www.mamasandpapas.com/cdn/shop/files/joie-rockers-joie-dreamer-rocker-strata-acorn-wood-1221501100_1024x1024@2x.jpg?v=1771929251" },
+    { id:26, brand:"Jane",            name:"Cuna Colecho Baby Side",                       price:265.00,emoji:"🛏️", img:"https://janeworld.com/24769-large_default/cuna-colecho-baby-side.webp" },
+    { id:27, brand:"Jane",            name:"Trona Evolutiva Plegable de Madera",           price:239.00,emoji:"🪑", img:"https://janeworld.com/24653-large_default/trona-evolutiva-plegable-de-madera-forest.webp" },
+    { id:28, brand:"Minicoton",       name:"Protector Tirantes",                           price:24.90, emoji:"🛒", img:"https://minicoton.com/cdn/shop/files/670341-1_-7YcJksuk.png?v=1752435581" },
+    { id:29, brand:"Minicoton",       name:"Colchoneta",                                   price:49.90, emoji:"🛒", img:"https://minicoton.com/cdn/shop/files/670310-1_Eb-ocLIneU.png?v=1752435554" },
+  ];
+
+  function fmtEur(n) { return "€" + n.toFixed(2).replace(".", ","); }
+
+  function loadGifted() {
+    try { return JSON.parse(localStorage.getItem("gifted") || "[]"); } catch { return []; }
+  }
+  function saveGifted(arr) { localStorage.setItem("gifted", JSON.stringify(arr)); }
+
+  function loadGiftedBy() {
+    try { return JSON.parse(localStorage.getItem("giftedBy") || "{}"); } catch { return {}; }
+  }
+  function saveGiftedBy(obj) { localStorage.setItem("giftedBy", JSON.stringify(obj)); }
+
+  let gifted   = loadGifted();
+  let giftedBy = loadGiftedBy();
+
+  function markGifted(id) {
+    if (!gifted.includes(id)) { gifted.push(id); saveGifted(gifted); }
+    renderAll();
+  }
+  function resetItem(id) {
+    gifted = gifted.filter(g => g !== id);
+    delete giftedBy[id];
+    saveGifted(gifted);
+    saveGiftedBy(giftedBy);
+    renderAll();
+  }
+  function markAll() {
+    gifted = items.map(i => i.id);
+    saveGifted(gifted);
+    renderAll();
+  }
+  function resetAll() {
+    gifted = [];
+    giftedBy = {};
+    saveGifted(gifted);
+    saveGiftedBy(giftedBy);
+    renderAll();
+  }
+
+  function updateProgress() {
+    const total       = items.reduce((s, i) => s + i.price, 0);
+    const giftedTotal = items.filter(i => gifted.includes(i.id)).reduce((s, i) => s + i.price, 0);
+    const pct = (giftedTotal / total * 100).toFixed(0);
+    document.getElementById("progressFill").style.width = pct + "%";
+    document.getElementById("progressText").textContent =
+      gifted.length + " de " + items.length + " artículos regalados · " +
+      fmtEur(giftedTotal) + " de " + fmtEur(total);
+    document.getElementById("toolbarStatus").textContent =
+      gifted.length + " regalados · " + (items.length - gifted.length) + " disponibles";
+  }
+
+  function renderAll() {
+    const grid = document.getElementById("itemsGrid");
+    grid.innerHTML = "";
+    items.forEach(function(item) {
+      const isGifted = gifted.includes(item.id);
+      const imgSrc = item.img
+        ? (item.img.startsWith('http') ? item.img : BASE + item.img)
+        : null;
+      const imgHtml = imgSrc
+        ? '<img src="' + imgSrc + '" alt="' + item.name + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'">' +
+          '<span class="emoji-fallback" style="display:none">' + item.emoji + '</span>'
+        : '<span class="emoji-fallback">' + item.emoji + '</span>';
+
+      const card = document.createElement("div");
+      card.className = "card" + (isGifted ? " gifted" : "");
+      card.innerHTML =
+        '<div class="card-img">' +
+          '<div class="gifted-badge">✓ Regalado</div>' +
+          imgHtml +
+        '</div>' +
+        '<div class="card-body">' +
+          '<div class="card-brand">' + item.brand + '</div>' +
+          '<div class="card-name">'  + item.name  + '</div>' +
+          '<div class="card-price">' + fmtEur(item.price) + '</div>' +
+          (isGifted && giftedBy[item.id]
+            ? '<div style="margin-top:8px;padding:7px 10px;background:#d4edda;border-radius:8px;font-size:.8rem;color:#2d6a4f;font-weight:600;">🎁 Regalado por: ' + giftedBy[item.id] + '</div>'
+            : '') +
+        '</div>' +
+        '<div class="card-admin">' +
+          '<button class="btn-gift"  onclick="markGifted(' + item.id + ')">✅ Marcar como regalado</button>' +
+          '<button class="btn-reset" onclick="resetItem('  + item.id + ')">🔄 Resetear</button>' +
+        '</div>';
+      grid.appendChild(card);
+    });
+    updateProgress();
+  }
+  renderAll();
+</script>
+</body>
+</html>
