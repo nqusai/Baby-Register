@@ -82,6 +82,57 @@
     .btn-tool:hover { opacity: .85; }
     .btn-mark-all  { background: var(--paid-fg);  color: #fff; }
     .btn-reset-all { background: var(--reset-fg); color: #fff; }
+    .btn-add-item  { background: #3a3530; color: #fff; }
+
+    /* ── EDIT MODAL ───────────────────────────────────────── */
+    .edit-modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .edit-modal-overlay.open { display: flex; }
+    .edit-modal {
+      background: #fff; border-radius: 20px;
+      padding: 28px 24px; max-width: 460px; width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .edit-modal h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 18px; }
+    .edit-field { margin-bottom: 14px; }
+    .edit-field label {
+      display: block; font-size: .8rem; font-weight: 700;
+      color: var(--muted); text-transform: uppercase;
+      letter-spacing: .06em; margin-bottom: 5px;
+    }
+    .edit-field input {
+      width: 100%; padding: 10px 12px;
+      border: 1.5px solid #e0e0e0; border-radius: 10px;
+      font-size: .9rem; outline: none; box-sizing: border-box;
+    }
+    .edit-field input:focus { border-color: var(--sage); }
+    .edit-img-preview {
+      width: 100%; height: 140px; object-fit: contain;
+      border: 1px solid #eee; border-radius: 10px;
+      margin-top: 8px; display: none; background: #fafafa;
+    }
+    .edit-actions { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+    .btn-edit-save {
+      flex: 1; padding: 12px; background: var(--sage); color: #fff;
+      border: none; border-radius: 10px; font-weight: 700;
+      font-size: .9rem; cursor: pointer; transition: background .2s;
+    }
+    .btn-edit-save:hover { background: #5d8570; }
+    .btn-edit-delete {
+      padding: 12px 16px; background: #fee2e2; color: #b91c1c;
+      border: none; border-radius: 10px; font-weight: 700;
+      font-size: .9rem; cursor: pointer; transition: background .2s;
+    }
+    .btn-edit-delete:hover { background: #fca5a5; }
+    .btn-edit-cancel {
+      padding: 12px 16px; background: #f3f4f6; color: var(--text);
+      border: none; border-radius: 10px; font-weight: 600;
+      font-size: .9rem; cursor: pointer;
+    }
 
     /* ── PROGRESS ─────────────────────────────────────── */
     .progress-wrap {
@@ -186,8 +237,32 @@
 
   <div class="toolbar">
     <span id="toolbarStatus">Cargando…</span>
+    <button class="btn-tool btn-add-item" onclick="openAddModal()">➕ Añadir artículo</button>
     <button class="btn-tool btn-mark-all" onclick="markAll()">✅ Marcar todos como regalados</button>
     <button class="btn-tool btn-reset-all" onclick="resetAll()">🔄 Resetear todos</button>
+  </div>
+
+  <!-- ── HERO TEXT EDITOR ──────────────────────────────────── -->
+  <div style="background:#fff;border-bottom:1px solid #e5d9c8;padding:16px 24px;">
+    <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;">✏️ Texto de la página pública</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="flex:1;min-width:200px;">
+        <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Título</label>
+        <input type="text" id="heroTitleInput"
+          style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:.9rem;outline:none;box-sizing:border-box;"
+          onfocus="this.style.borderColor='var(--sage)'" onblur="this.style.borderColor='#e0e0e0'" />
+      </div>
+      <div style="flex:2;min-width:200px;">
+        <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Subtítulo</label>
+        <input type="text" id="heroSubtitleInput"
+          style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:.9rem;outline:none;box-sizing:border-box;"
+          onfocus="this.style.borderColor='var(--sage)'" onblur="this.style.borderColor='#e0e0e0'" />
+      </div>
+      <button onclick="saveHeroText()"
+        style="padding:9px 20px;background:var(--sage);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap;">
+        💾 Guardar
+      </button>
+    </div>
   </div>
 
   <div class="progress-wrap">
@@ -209,40 +284,75 @@
 
 </div>
 
+<!-- ── ADD / EDIT MODAL ───────────────────────────────────── -->
+<div class="edit-modal-overlay" id="editModal">
+  <div class="edit-modal">
+    <h2 id="editModalTitle">➕ Añadir artículo</h2>
+
+    <div class="edit-field">
+      <label>Marca</label>
+      <input type="text" id="editBrand" placeholder="Ej: Zara Home" />
+    </div>
+    <div class="edit-field">
+      <label>Nombre *</label>
+      <input type="text" id="editName" placeholder="Ej: Manta Bebé Algodón" />
+    </div>
+    <div class="edit-field">
+      <label>Precio (€) *</label>
+      <input type="number" id="editPrice" placeholder="19.99" min="0" step="0.01" />
+    </div>
+    <div class="edit-field">
+      <label>URL de imagen</label>
+      <input type="text" id="editImg" placeholder="https://..." oninput="previewImg()" />
+      <img id="editImgPreview" class="edit-img-preview" alt="Vista previa" />
+    </div>
+
+    <div class="edit-actions">
+      <button class="btn-edit-save" onclick="saveItem()">💾 Guardar</button>
+      <button class="btn-edit-delete" id="editDeleteBtn" onclick="deleteItem()" style="display:none;">🗑️ Eliminar</button>
+      <button class="btn-edit-cancel" onclick="closeEditModal()">✕ Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // ── Data ───────────────────────────────────────────────────
   const BASE = "https://www.bebecenter.es/";
-  const items = [
-    { id:1,  brand:"Pasito a Pasito", name:"Bolsa Canastilla Icon Cream",                  price:79.90, emoji:"👜", img:"42390-large_default/bolsa-canastilla-icon-cream.jpg" },
-    { id:2,  brand:"Walking Mum",     name:"Bolsa Crossbody Caetana Sand",                 price:29.90, emoji:"👜", img:"40269-large_default/bolso-para-carrito-crossbody-walking-mum-caetana-sand.jpg" },
-    { id:3,  brand:"Bimbidreams",     name:"Interior Capazo Carro – Matalasé Blanco",      price:42.90, emoji:"🛒", img:"26459-large_default/edredoncojin-interior-acolchado-colchon-capazo-conejo-verde-musgo.jpg" },
-    { id:4,  brand:"Bimbidreams",     name:"Saco Arrullo con Capucha – Blue Sky",          price:47.80, emoji:"👶", img:"46794-superlarge_default/cambiador-ajustable-50x70-rizo-cornelia-verde.jpg" },
-    { id:5,  brand:"Walking Mum",     name:"Saco Silla Entretiempo Praline/Matcha",        price:99.50, emoji:"🪑", img:"33540-large_default/saco-para-silla-mimosa-entretiempo-rosa.jpg" },
-    { id:6,  brand:"Bimbidreams",     name:"Funda Nórdica + Relleno Minicuna – Blue Sky", price:41.90, emoji:"🛏️", img:"46536-large_default/funda-nordica-relleno-minicuna-80x100cm-cornelia.jpg" },
-    { id:7,  brand:"Momcozy",         name:"Lima Eléctrica para Uñas de Bebé NC02",        price:29.99, emoji:"💅", img:"36857-large_default/lima-de-unas-electrica-tommee-tippee.jpg" },
-    { id:8,  brand:"Pasito a Pasito", name:"Sábana Ajustable Cuco + Muselina Nara",        price:39.90, emoji:"🛏️", img:"45450-large_default/sabana-ajustable-cuco-muselina-nara.jpg" },
-    { id:9,  brand:"Bimbidreams",     name:"Manta Embossed 80×110 cm – Verde",            price:23.80, emoji:"🧸", img:"21975-large_default/manta-crochet-100-algodon-95x75cm-lino.jpg" },
+
+  const DEFAULT_ITEMS = [
+    { id:7,  brand:"Momcozy",         name:"Lima",                                         price:29.99, emoji:"💅", img:"https://www.bebecenter.es/52271-superlarge_default_2x/lima-electrica-unas-bebe-nc02-unico-verde.jpg" },
     { id:10, brand:"Bimbidreams",     name:"Toquilla Tricot 75×90 cm – Bambú Beige",      price:31.90, emoji:"🧣", img:"46833-large_default/toquilla-tricot-75x90cm-bambu-blanco.jpg" },
-    { id:11, brand:"Sonpetit",        name:"Arrullo Cometas – Algodón Orgánico",           price:32.95, emoji:"☁️", img:"44640-large_default/arrullo-cotton-algodon-organico.jpg" },
     { id:12, brand:"Cambrass",        name:"Bajera Ajustable Minicuna 50×90 – Blanco",    price:16.50, emoji:"🛏️", img:"16093-large_default/bajera-ajustable-impermeable-tencel-minicuna-50x90x1cm-liso-e-blanco.jpg" },
     { id:13, brand:"Cambrass",        name:"Bajera Ajustable Cuna 60×120 – Blanco",       price:20.10, emoji:"🛏️", img:"10433-large_default/bajera-ajustable-impermeable-tencel-c60-60x120-cm-liso-e-blanco.jpg" },
     { id:14, brand:"Jane",            name:"Esponja Natural (pack 2)",                     price:7.95,  emoji:"🛁", img:"5460-large_default/esponja-natural-2-uds-jane.jpg" },
-    { id:15, brand:"Suavinex",        name:"Chupete ZeroZero Silicona -2/+2M",             price:9.25,  emoji:"🍬", img:"44861-large_default/chupete-fisiologico-de-silicona-100-suavinex-sx-pro-mariposa-azul-0-6-meses.jpg" },
-    { id:16, brand:"Minicoton",       name:"Basket Rayas – Blue + Sand",                   price:99.90, emoji:"🧺", img:"https://minicoton.com/cdn/shop/files/670175-1_lyQuopE-d.png?v=1752434454&width=1400" },
-    { id:17, brand:"Minicoton",       name:"Crudo Muslin Fitted Sheet",                    price:19.90, emoji:"🛏️", img:"https://minicoton.com/cdn/shop/files/153971-1_phKRJ0aPi.jpg?v=1752435724&width=1400" },
-    { id:18, brand:"Minicoton",       name:"Bajera Bambula Blanca",                        price:19.90, emoji:"🛏️", img:"https://minicoton.com/cdn/shop/files/153963-1_mqZt3-Kz1A.jpg?v=1752435621&width=1400" },
+    { id:15, brand:"Suavinex",        name:"Chupete ZeroZero Silicona -2/+2M",             price:9.25,  emoji:"🍬", img:"https://www.bebecenter.es/50490-superlarge_default_2x/chupete-zerozero-silicona-22m.jpg" },
+    { id:16, brand:"Minicoton",       name:"Bolso Carro",                                  price:99.90, emoji:"🧺", img:"https://minicoton.com/cdn/shop/files/670175-1_lyQuopE-d.png?v=1752434454&width=1400" },
+    { id:17, brand:"Minicoton",       name:"Bajera Beige",                                 price:19.90, emoji:"🛏️", img:"https://minicoton.com/cdn/shop/files/153971-1_phKRJ0aPi.jpg?v=1752435724&width=1400" },
+    { id:18, brand:"Minicoton",       name:"Bajera Blanco",                                price:19.90, emoji:"🛏️", img:"https://minicoton.com/cdn/shop/files/153963-1_mqZt3-Kz1A.jpg?v=1752435621&width=1400" },
     { id:19, brand:"Zara Home",       name:"Lámpara Quitamiedos Infantil Oso",             price:12.99, emoji:"🐻", img:"https://static.zarahome.net/assets/public/a49d/5fd8/e0744cf2b7cd/e3e644aa7061/42682763450-p1/42682763450-p1.jpg?ts=1742990028671&f=auto&w=957&f=auto" },
     { id:20, brand:"Zara Home",       name:"Cesta Ondas Mediana",                          price:19.99, emoji:"🧺", img:"https://static.zarahome.net/assets/public/6017/4dbd/70954490b492/875ebb04b764/46670049052-p1/46670049052-p1.jpg?ts=1770217770708&f=auto&w=957&f=auto" },
     { id:21, brand:"Zara Home",       name:"Toalla Baño Capucha Bebé Estrellas",           price:19.99, emoji:"🛁", img:"https://static.zarahome.net/assets/public/30a9/c5e6/49594e9d8553/adc6c8531f4d/46640423251-p1/46640423251-p1.jpg?ts=1721748356952&f=auto&w=957&f=auto" },
     { id:22, brand:"Zara Home",       name:"Manta Polar Bebé Algodón",                     price:19.99, emoji:"🧸", img:"https://static.zarahome.net/assets/public/8f77/2aa0/d3724f469f05/7612d34db194/41608004500-a7/41608004500-a7.jpg?ts=1771919163337&f=auto&w=479" },
     { id:23, brand:"Zara Home",       name:"Manta Bebé Algodón Puntos",                    price:25.99, emoji:"🧸", img:"https://static.zarahome.net/assets/public/28e6/6f95/50bd4956b616/fdf87d1e5467/41605004712-a7/41605004712-a7.jpg?ts=1773313536918&f=auto&w=479" },
-    { id:24, brand:"Micuna",          name:"Kit Colecho",                                  price:85.00, emoji:"🛏️", img:"https://bebesvictoria.es/131924-large_default/kit-colecho-cp-2007-be2in-cuna-con-puente-micuna.webp" },
-    { id:25, brand:"Joie",            name:"Hamaca Dreamer de Joie",                       price:108.99,emoji:"👶", img:"https://www.mamasandpapas.com/cdn/shop/files/joie-rockers-joie-dreamer-rocker-strata-acorn-wood-1221501100_1024x1024@2x.jpg?v=1771929251" },
-    { id:26, brand:"Jane",            name:"Cuna Colecho Baby Side",                       price:265.00,emoji:"🛏️", img:"https://janeworld.com/24769-large_default/cuna-colecho-baby-side.webp" },
+    { id:24, brand:"Micuna",          name:"Kit Colecho",                                  price:64.00, emoji:"🛏️", img:"https://bebesvictoria.es/131924-large_default/kit-colecho-cp-2007-be2in-cuna-con-puente-micuna.webp" },
+    { id:25, brand:"Joie",            name:"Hamaca Dreamer de Joie",                       price:85.00, emoji:"👶", img:"https://www.mamasandpapas.com/cdn/shop/files/joie-rockers-joie-dreamer-rocker-strata-acorn-wood-1221501100_1024x1024@2x.jpg?v=1771929251" },
+    { id:26, brand:"Jane",            name:"Cuna Colecho Baby Side",                       price:212.00,emoji:"🛏️", img:"https://janeworld.com/24769-large_default/cuna-colecho-baby-side.webp" },
     { id:27, brand:"Jane",            name:"Trona Evolutiva Plegable de Madera",           price:239.00,emoji:"🪑", img:"https://janeworld.com/24653-large_default/trona-evolutiva-plegable-de-madera-forest.webp" },
     { id:28, brand:"Minicoton",       name:"Protector Tirantes",                           price:24.90, emoji:"🛒", img:"https://minicoton.com/cdn/shop/files/670341-1_-7YcJksuk.png?v=1752435581" },
     { id:29, brand:"Minicoton",       name:"Colchoneta",                                   price:49.90, emoji:"🛒", img:"https://minicoton.com/cdn/shop/files/670310-1_Eb-ocLIneU.png?v=1752435554" },
   ];
+
+  function loadItems() {
+    try {
+      const s = localStorage.getItem("adminItems");
+      if (s) return JSON.parse(s);
+    } catch(e) {}
+    saveItems(DEFAULT_ITEMS);
+    return DEFAULT_ITEMS.slice();
+  }
+  function saveItems(arr) { localStorage.setItem("adminItems", JSON.stringify(arr)); }
+
+  let items = loadItems();
 
   function fmtEur(n) { return "€" + n.toFixed(2).replace(".", ","); }
 
@@ -326,12 +436,115 @@
         '<div class="card-admin">' +
           '<button class="btn-gift"  onclick="markGifted(' + item.id + ')">✅ Marcar como regalado</button>' +
           '<button class="btn-reset" onclick="resetItem('  + item.id + ')">🔄 Resetear</button>' +
+          '<button class="btn-tool" style="width:100%;margin-top:6px;background:#f3f4f6;color:#3a3530;" onclick="openEditModal(' + item.id + ')">✏️ Editar</button>' +
         '</div>';
       grid.appendChild(card);
     });
     updateProgress();
   }
   renderAll();
+
+  // ── Hero text ──────────────────────────────────────────────
+  const DEFAULT_TITLE    = "Lista de Bebé de Paula y Nas";
+  const DEFAULT_SUBTITLE = "¡Ayúdanos a dar la bienvenida a nuestro pequeño!";
+
+  function loadHeroText() {
+    document.getElementById("heroTitleInput").value =
+      localStorage.getItem("heroTitle") || DEFAULT_TITLE;
+    document.getElementById("heroSubtitleInput").value =
+      localStorage.getItem("heroSubtitle") || DEFAULT_SUBTITLE;
+  }
+
+  function saveHeroText() {
+    const title    = document.getElementById("heroTitleInput").value.trim() || DEFAULT_TITLE;
+    const subtitle = document.getElementById("heroSubtitleInput").value.trim();
+    localStorage.setItem("heroTitle",    title);
+    localStorage.setItem("heroSubtitle", subtitle);
+    const btn = document.querySelector('[onclick="saveHeroText()"]');
+    btn.textContent = "✅ Guardado";
+    setTimeout(function() { btn.textContent = "💾 Guardar"; }, 2000);
+  }
+
+  loadHeroText();
+
+  // ── Add / Edit Modal ────────────────────────────────────────
+  let editingId = null;
+
+  function openAddModal() {
+    editingId = null;
+    document.getElementById("editModalTitle").textContent = "➕ Añadir artículo";
+    document.getElementById("editBrand").value = "";
+    document.getElementById("editName").value  = "";
+    document.getElementById("editPrice").value = "";
+    document.getElementById("editImg").value   = "";
+    document.getElementById("editImgPreview").style.display = "none";
+    document.getElementById("editDeleteBtn").style.display  = "none";
+    document.getElementById("editModal").classList.add("open");
+    setTimeout(function() { document.getElementById("editBrand").focus(); }, 100);
+  }
+
+  function openEditModal(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    editingId = id;
+    document.getElementById("editModalTitle").textContent = "✏️ Editar artículo";
+    document.getElementById("editBrand").value = item.brand || "";
+    document.getElementById("editName").value  = item.name  || "";
+    document.getElementById("editPrice").value = item.price || "";
+    document.getElementById("editImg").value   = item.img   || "";
+    document.getElementById("editDeleteBtn").style.display = "inline-block";
+    previewImg();
+    document.getElementById("editModal").classList.add("open");
+  }
+
+  function closeEditModal() {
+    document.getElementById("editModal").classList.remove("open");
+    editingId = null;
+  }
+
+  document.getElementById("editModal").addEventListener("click", function(e) {
+    if (e.target === this) closeEditModal();
+  });
+
+  function previewImg() {
+    const url = document.getElementById("editImg").value.trim();
+    const preview = document.getElementById("editImgPreview");
+    if (url) { preview.src = url; preview.style.display = "block"; }
+    else { preview.style.display = "none"; }
+  }
+
+  function saveItem() {
+    const brand = document.getElementById("editBrand").value.trim();
+    const name  = document.getElementById("editName").value.trim();
+    const price = parseFloat(document.getElementById("editPrice").value);
+    const img   = document.getElementById("editImg").value.trim();
+    if (!name || isNaN(price) || price < 0) {
+      alert("Por favor, introduce al menos el nombre y un precio válido.");
+      return;
+    }
+    if (editingId === null) {
+      const newId = Math.max(0, ...items.map(i => i.id)) + 1;
+      items.push({ id: newId, brand: brand, name: name, price: price, emoji: "🎁", img: img || null });
+    } else {
+      const idx = items.findIndex(i => i.id === editingId);
+      if (idx !== -1) items[idx] = Object.assign({}, items[idx], { brand: brand, name: name, price: price, img: img || null });
+    }
+    saveItems(items);
+    closeEditModal();
+    renderAll();
+  }
+
+  function deleteItem() {
+    if (editingId === null) return;
+    const item = items.find(i => i.id === editingId);
+    if (!item || !confirm('¿Eliminar "' + item.name + '"?')) return;
+    items = items.filter(i => i.id !== editingId);
+    gifted = gifted.filter(g => g !== editingId);
+    delete giftedBy[editingId];
+    saveItems(items); saveGifted(gifted); saveGiftedBy(giftedBy);
+    closeEditModal();
+    renderAll();
+  }
 </script>
 </body>
 </html>

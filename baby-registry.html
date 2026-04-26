@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍼 Lista de Bebé – Paula</title>
+  <style>
+    :root {
+      --sage:    #7a9e87;
+      --sage-lt: #b8d4c0;
+      --cream:   #fdf8f2;
+      --sand:    #f0e6d3;
+      --text:    #3a3530;
+      --muted:   #8a7f76;
+      --card:    #ffffff;
+      --revolut: #191c33;
+      --paid-bg: #d4edda;
+      --paid-fg: #2d6a4f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HERO ─────────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #7a9e87 0%, #a8c5af 50%, #c8dfc5 100%);
+      text-align: center;
+      padding: 56px 24px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "🌿🍃🌿🍃🌿🍃🌿🍃🌿🍃🌿🍃🌿🍃🌿";
+      position: absolute; top: 12px; left: 0; right: 0;
+      font-size: 18px; opacity: .35; letter-spacing: 6px;
+      white-space: nowrap;
+    }
+    .hero-emoji { font-size: 64px; display: block; margin-bottom: 12px; }
+    .hero h1 {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 700; color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    .hero p {
+      color: rgba(255,255,255,.9);
+      font-size: 1.05rem; margin-top: 10px;
+    }
+
+    /* ── PROGRESS BAR ─────────────────────────────────────── */
+    .progress-wrap {
+      background: var(--sand);
+      border-bottom: 1px solid #e5d9c8;
+      padding: 20px 24px;
+      text-align: center;
+    }
+    .progress-label {
+      font-size: .85rem; color: var(--muted);
+      margin-bottom: 8px; font-weight: 500;
+    }
+    .progress-bar-track {
+      max-width: 480px; margin: 0 auto;
+      height: 10px; background: #ddd;
+      border-radius: 99px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--sage), var(--sage-lt));
+      border-radius: 99px;
+      transition: width .6s ease;
+    }
+    .progress-text {
+      font-size: .9rem; color: var(--text);
+      margin-top: 8px; font-weight: 600;
+    }
+
+    /* ── GRID ─────────────────────────────────────────────── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 0 20px;
+    }
+
+    /* ── CARD ─────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform .2s, box-shadow .2s;
+      position: relative;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 24px rgba(0,0,0,.11);
+    }
+    .card.gifted {
+      opacity: .7;
+    }
+    .card.selected {
+      border: 2.5px solid var(--sage);
+      box-shadow: 0 0 0 4px rgba(122,158,135,.2);
+    }
+    /* ── SELECT BUTTON ────────────────────────────────────── */
+    .btn-select {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 12px;
+      background: #f5f5f5; color: var(--text);
+      border: 1.5px solid #e0ddd6; border-radius: 10px;
+      font-size: .9rem; font-weight: 600; cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-select:hover { background: #e8f4ea; border-color: var(--sage-lt); }
+    .btn-select.btn-select-active {
+      background: var(--sage); color: #fff;
+      border-color: var(--sage);
+    }
+
+    /* ── FLOATING REGALAR BUTTON ──────────────────────────── */
+    .fab-regalar {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.95);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 32px;
+      background: #ccc;
+      color: #fff;
+      border: none;
+      border-radius: 99px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: not-allowed;
+      box-shadow: 0 4px 14px rgba(0,0,0,.15);
+      transition: background .3s, box-shadow .3s, transform .3s cubic-bezier(.34,1.56,.64,1), padding .3s;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: .55;
+      min-width: 220px;
+    }
+    .fab-regalar.active {
+      background: linear-gradient(135deg, var(--sage), #4a8060);
+      box-shadow: 0 8px 32px rgba(122,158,135,.5);
+      transform: translateX(-50%) scale(1.05);
+      cursor: pointer;
+      pointer-events: auto;
+      opacity: 1;
+    }
+    .fab-regalar.active:hover {
+      background: linear-gradient(135deg, #5d8570, #3d6b52);
+      box-shadow: 0 12px 40px rgba(122,158,135,.6);
+      transform: translateX(-50%) scale(1.08);
+    }
+    .fab-regalar.active:active {
+      transform: translateX(-50%) scale(1.02);
+    }
+    .fab-icon { font-size: 1.2rem; }
+    .fab-label { font-size: 1rem; font-weight: 700; }
+    .fab-info {
+      display: flex; flex-direction: column; align-items: flex-start;
+      border-left: 1.5px solid rgba(255,255,255,.35);
+      padding-left: 12px; gap: 1px;
+      display: none;
+    }
+    .fab-regalar.active .fab-info { display: flex; }
+    .fab-count { font-size: .7rem; opacity: .85; font-weight: 600; }
+    .fab-total { font-size: .95rem; font-weight: 800; line-height: 1; }
+    .gifted-banner {
+      display: none;
+      position: absolute; top: 22px; right: -32px;
+      width: 130px; text-align: center;
+      background: var(--paid-fg); color: #fff;
+      font-size: .68rem; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: 6px 0;
+      transform: rotate(45deg);
+      box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    }
+    .card.gifted .gifted-banner { display: block; }
+
+    .card-emoji {
+      background: #fff;
+      padding: 20px;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid #f0ece6;
+    }
+    .card-emoji img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      image-rendering: high-quality;
+    }
+    .card-emoji .emoji-fallback {
+      font-size: 3.5rem;
+    }
+    .card-body {
+      padding: 16px 18px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .card-brand {
+      font-size: .7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
+      color: var(--sage);
+    }
+    .card-name {
+      font-size: .95rem; font-weight: 600;
+      color: var(--text); line-height: 1.35;
+    }
+    .card-price {
+      font-size: 1.35rem; font-weight: 800;
+      color: var(--sage); margin-top: 4px;
+    }
+    .card-footer { padding: 0 18px 18px; }
+
+    /* ── BUTTON ───────────────────────────────────────────── */
+    /* ── GIFTED STATE ──────────────────────────────────────── */
+
+    /* ── MODAL ───────────────────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 20px;
+      padding: 28px 24px; max-width: 420px; width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      text-align: center; animation: popIn .2s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(.9); opacity: 0; }
+      to   { transform: scale(1);  opacity: 1; }
+    }
+    .modal-emoji { font-size: 2.8rem; margin-bottom: 8px; }
+    .modal h2 { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .modal .modal-item { font-size: .85rem; color: var(--muted); margin: 4px 0 16px; }
+    .modal .modal-price { font-size: 1.8rem; font-weight: 800; color: var(--sage); margin-bottom: 18px; }
+    .modal-link-box {
+      display: flex; align-items: center; gap: 8px;
+      background: #f3f4f6; border-radius: 10px;
+      padding: 10px 12px; margin-bottom: 16px;
+      border: 1px solid #e5e7eb;
+    }
+    .modal-link-box input {
+      flex: 1; border: none; background: transparent;
+      font-size: .75rem; color: var(--text); outline: none;
+      font-family: monospace; overflow: hidden; text-overflow: ellipsis;
+    }
+    .btn-copy {
+      background: var(--sage); color: #fff; border: none;
+      padding: 6px 12px; border-radius: 6px;
+      font-size: .75rem; font-weight: 600; cursor: pointer;
+      white-space: nowrap; transition: background .2s;
+    }
+    .btn-copy:hover { background: #5d8570; }
+    .btn-open {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 13px;
+      background: var(--revolut); color: #fff; border: none;
+      border-radius: 10px; font-size: .95rem; font-weight: 600;
+      cursor: pointer; text-decoration: none; margin-bottom: 10px;
+      transition: background .2s;
+    }
+    .btn-open:hover { background: #2d3155; }
+    .btn-modal-close {
+      background: none; border: none; color: var(--muted);
+      font-size: .85rem; cursor: pointer; padding: 4px;
+    }
+    .btn-modal-close:hover { color: var(--text); }
+
+    .btn-confirm-paid {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 11px;
+      background: var(--paid-fg); color: #fff; border: none;
+      border-radius: 10px; font-size: .9rem; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-confirm-paid:hover { background: #1e4d38; }
+
+    .btn-cash {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 13px; margin-top: 10px;
+      background: #fff7e6; color: #8a5e00;
+      border: 2px solid #f0c040; border-radius: 10px;
+      font-size: .95rem; font-weight: 600; cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-cash:hover { background: #ffefc0; }
+
+    .btn-gifted {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; padding: 12px;
+      background: var(--paid-bg);
+      color: var(--paid-fg); border: none; border-radius: 10px;
+      font-size: .9rem; font-weight: 600; cursor: default;
+    }
+    .card.gifted .btn-pay { display: none; }
+    .card.gifted .btn-gifted { display: flex; }
+    .card:not(.gifted) .btn-gifted { display: none; }
+
+    /* ── TOTAL CARD ───────────────────────────────────────── */
+    .total-card {
+      width: 100%; max-width: 1100px; margin: 8px auto 40px;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, var(--sage), #5d8570);
+      border-radius: 20px; color: #fff; text-align: center;
+      box-shadow: 0 4px 20px rgba(122,158,135,.35);
+    }
+    .total-card p { font-size: .9rem; opacity: .85; margin-bottom: 6px; }
+    .total-card .amount { font-size: 2rem; font-weight: 800; }
+    .total-card .btn-general {
+      display: inline-flex; align-items: center; gap: 10px;
+      margin-top: 0; padding: 18px 48px;
+      background: rgba(255,255,255,.2);
+      backdrop-filter: blur(8px);
+      border: 2px solid rgba(255,255,255,.5);
+      border-radius: 99px; color: #fff;
+      font-weight: 700; font-size: 1.15rem;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .total-card .btn-general:hover { background: rgba(255,255,255,.3); }
+
+    /* ── FOOTER ───────────────────────────────────────────── */
+    footer {
+      text-align: center; padding: 20px;
+      font-size: .78rem; color: var(--muted);
+      border-top: 1px solid #e5ddd0;
+    }
+
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+      .hero { padding: 40px 16px 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HERO ──────────────────────────────────────────────── -->
+<div class="hero">
+  <span class="hero-emoji">🍼</span>
+  <h1 id="heroTitle">Lista de Bebé de Paula y Nas</h1>
+  <p id="heroSubtitle">¡Ayúdanos a dar la bienvenida a nuestro pequeño!</p>
+</div>
+
+
+
+<!-- ── ITEMS GRID ─────────────────────────────────────────── -->
+<div class="grid" id="itemsGrid"></div>
+
+<!-- ── TOTAL / GENERAL ───────────────────────────────────── -->
+<div style="padding: 0 20px;">
+  <div class="total-card" style="max-width:1100px; margin: 8px auto 40px;">
+    <button class="btn-general" onclick="openContrib()">
+      💚 &nbsp;Contribuir con otro importe
+    </button>
+  </div>
+</div>
+
+<footer></footer>
+
+<!-- ── FLOATING REGALAR BUTTON ────────────────────────────── -->
+<button class="fab-regalar" id="fabRegalar" onclick="openMultiModal()">
+  <span class="fab-icon">🎁</span>
+  <span class="fab-label">Regalar</span>
+  <span class="fab-info">
+    <span class="fab-count" id="fabCount">0 artículos</span>
+    <span class="fab-total" id="fabTotal">€0,00</span>
+  </span>
+</button>
+
+<!-- ── MULTI-ITEM MODAL ───────────────────────────────────────── -->
+<div class="modal-overlay" id="multiModal">
+  <div class="modal">
+    <div class="modal-emoji">🎁</div>
+
+    <!-- Step 1: Name -->
+    <div id="mStepName">
+      <h2>¡Regalar varios artículos!</h2>
+      <div id="mItemList" style="font-size:.8rem;color:var(--muted);margin:8px 0 4px;text-align:left;line-height:1.5;"></div>
+      <div class="modal-price" id="mTotalPrice" style="margin-bottom:16px;"></div>
+      <p style="font-size:.82rem;color:#666;margin-bottom:6px;text-align:left;font-weight:600;">
+        Tu nombre: <span style="color:#e57373;">*</span>
+      </p>
+      <input type="text" id="mName" placeholder="Ej: María García"
+        oninput="onMNameInput()" onkeydown="if(event.key==='Enter')clickMName()"
+        style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;
+               font-size:.9rem;outline:none;margin-bottom:14px;box-sizing:border-box;"
+        onfocus="this.style.borderColor='var(--sage)'"
+        onblur="this.style.borderColor='#e0e0e0'" />
+      <button id="mBtnName" onclick="clickMName()"
+        style="width:100%;padding:12px;background:var(--sage);color:#fff;border:none;
+               border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;
+               opacity:.4;pointer-events:none;transition:opacity .2s;">
+        Siguiente →
+      </button>
+    </div>
+
+    <!-- Step 2: Pay -->
+    <div id="mStepPay" style="display:none;">
+      <p style="font-size:.9rem;color:var(--text);margin-bottom:16px;">
+        Hola <strong id="mDisplayName"></strong>, elige cómo quieres pagar:
+      </p>
+      <a class="btn-open" id="mPayBtn" target="_blank" rel="noopener" onclick="onMRevolutClicked()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
+        Pagar online con tarjeta
+      </a>
+      <button class="btn-cash" onclick="onMCashClicked()">
+        💵 &nbsp;Pagar en efectivo
+      </button>
+    </div>
+
+    <!-- Step 3: Confirm -->
+    <div id="mConfirmSection" style="display:none; margin-top:14px; padding:14px; background:#f0faf3; border-radius:12px; border:1px solid #c3e6cb;">
+      <p id="mConfirmMsg" style="font-size:.85rem; color:#2d6a4f; font-weight:600; margin-bottom:10px;">
+        🔔 ¿Has completado el pago con tarjeta?
+      </p>
+      <button id="mConfirmBtn" class="btn-confirm-paid" onclick="confirmMultiPaid()">
+        ✅ &nbsp;Sí, ya he pagado
+      </button>
+    </div>
+
+    <button class="btn-modal-close" style="margin-top:14px;" onclick="closeMultiModal()">✕ Cerrar</button>
+  </div>
+</div>
+
+<!-- ── PAYMENT MODAL ──────────────────────────────────────── -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-emoji" id="modalEmoji">🎁</div>
+    <h2 id="modalTitle">Regalar artículo</h2>
+    <div class="modal-item" id="modalItem"></div>
+    <div class="modal-price" id="modalPrice"></div>
+    <!-- Step 1: Name -->
+    <div id="stepName">
+      <p style="font-size:.82rem;color:#666;margin-bottom:6px;text-align:left;font-weight:600;">
+        Tu nombre: <span style="color:#e57373;">*</span>
+      </p>
+      <input
+        type="text"
+        id="giftName"
+        placeholder="Ej: María García"
+        oninput="onNameInput()"
+        onkeydown="if(event.key==='Enter')clickNext()"
+        style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;
+               font-size:.9rem;outline:none;margin-bottom:14px;box-sizing:border-box;"
+        onfocus="this.style.borderColor='var(--sage)'"
+        onblur="this.style.borderColor='#e0e0e0'"
+      />
+      <button id="btnNext" onclick="clickNext()"
+        style="width:100%;padding:12px;background:var(--sage);color:#fff;border:none;
+               border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;
+               opacity:.4;pointer-events:none;transition:opacity .2s;">
+        Siguiente →
+      </button>
+    </div>
+
+    <!-- Step 2: Payment button (hidden initially) -->
+    <div id="stepPay" style="display:none;">
+      <p style="font-size:.9rem;color:var(--text);margin-bottom:16px;">
+        Hola <strong id="displayName"></strong>, elige cómo quieres pagar:
+      </p>
+      <a class="btn-open" id="modalOpenBtn" target="_blank" rel="noopener" onclick="onRevolutClicked()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
+        Pagar online con tarjeta
+      </a>
+      <button class="btn-cash" onclick="onCashClicked()">
+        💵 &nbsp;Pagar en efectivo
+      </button>
+    </div>
+
+    <!-- Shown only after clicking a payment option -->
+    <div id="confirmSection" style="display:none; margin-top:14px; padding:14px; background:#f0faf3; border-radius:12px; border:1px solid #c3e6cb;">
+      <p id="confirmMsg" style="font-size:.85rem; color:#2d6a4f; font-weight:600; margin-bottom:10px;">
+        🔔 ¿Has completado el pago con tarjeta?
+      </p>
+      <button id="confirmBtn" class="btn-confirm-paid" onclick="confirmPaid()">
+        ✅ &nbsp;Sí, ya he pagado
+      </button>
+    </div>
+
+    <button class="btn-modal-close" onclick="closeModal()">✕ Cerrar</button>
+  </div>
+</div>
+
+<script>
+  const REVOLUT_BASE = "https://revolut.me/nqusai?currency=EUR&amount=";
+
+  // Apply hero text from admin settings
+  (function() {
+    const t = localStorage.getItem("heroTitle");
+    const s = localStorage.getItem("heroSubtitle");
+    if (t) document.getElementById("heroTitle").textContent = t;
+    if (s) document.getElementById("heroSubtitle").textContent = s;
+  })();
+
+  const BASE = "https://www.bebecenter.es/";
+
+  const DEFAULT_ITEMS = [
+    { id:7,  brand:"Momcozy",         name:"Lima",                                         price:29.99, emoji:"💅", img:"https://www.bebecenter.es/52271-superlarge_default_2x/lima-electrica-unas-bebe-nc02-unico-verde.jpg" },
+    { id:10, brand:"Bimbidreams",     name:"Toquilla Tricot 75×90 cm – Bambú Beige",      price:31.90, emoji:"🧣", img:"46833-large_default/toquilla-tricot-75x90cm-bambu-blanco.jpg" },
+    { id:12, brand:"Cambrass",        name:"Bajera Ajustable Minicuna 50×90 – Blanco",    price:16.50, emoji:"🛏️", img:"16093-large_default/bajera-ajustable-impermeable-tencel-minicuna-50x90x1cm-liso-e-blanco.jpg" },
+    { id:13, brand:"Cambrass",        name:"Bajera Ajustable Cuna 60×120 – Blanco",       price:20.10, emoji:"🛏️", img:"10433-large_default/bajera-ajustable-impermeable-tencel-c60-60x120-cm-liso-e-blanco.jpg" },
+    { id:14, brand:"Jane",            name:"Esponja Natural (pack 2)",                     price:7.95,  emoji:"🛁", img:"5460-large_default/esponja-natural-2-uds-jane.jpg" },
+    { id:15, brand:"Suavinex",        name:"Chupete ZeroZero Silicona -2/+2M",             price:9.25,  emoji:"🍬", img:"https://www.bebecenter.es/50490-superlarge_default_2x/chupete-zerozero-silicona-22m.jpg" },
+    { id:16, brand:"Minicoton",       name:"Bolso Carro",                                  price:99.90, emoji:"🧺", img:"https://minicoton.com/cdn/shop/files/670175-1_lyQuopE-d.png?v=1752434454&width=1400" },
+    { id:17, brand:"Minicoton",       name:"Bajera Beige",                                 price:19.90, emoji:"🛏️", img:"https://minicoton.com/cdn/shop/files/153971-1_phKRJ0aPi.jpg?v=1752435724&width=1400" },
+    { id:18, brand:"Minicoton",       name:"Bajera Blanco",                                price:19.90, emoji:"🛏️", img:"https://minicoton.com/cdn/shop/files/153963-1_mqZt3-Kz1A.jpg?v=1752435621&width=1400" },
+    { id:19, brand:"Zara Home",       name:"Lámpara Quitamiedos Infantil Oso",             price:12.99, emoji:"🐻", img:"https://static.zarahome.net/assets/public/a49d/5fd8/e0744cf2b7cd/e3e644aa7061/42682763450-p1/42682763450-p1.jpg?ts=1742990028671&f=auto&w=957&f=auto" },
+    { id:20, brand:"Zara Home",       name:"Cesta Ondas Mediana",                          price:19.99, emoji:"🧺", img:"https://static.zarahome.net/assets/public/6017/4dbd/70954490b492/875ebb04b764/46670049052-p1/46670049052-p1.jpg?ts=1770217770708&f=auto&w=957&f=auto" },
+    { id:21, brand:"Zara Home",       name:"Toalla Baño Capucha Bebé Estrellas",           price:19.99, emoji:"🛁", img:"https://static.zarahome.net/assets/public/30a9/c5e6/49594e9d8553/adc6c8531f4d/46640423251-p1/46640423251-p1.jpg?ts=1721748356952&f=auto&w=957&f=auto" },
+    { id:22, brand:"Zara Home",       name:"Manta Polar Bebé Algodón",                     price:19.99, emoji:"🧸", img:"https://static.zarahome.net/assets/public/8f77/2aa0/d3724f469f05/7612d34db194/41608004500-a7/41608004500-a7.jpg?ts=1771919163337&f=auto&w=479" },
+    { id:23, brand:"Zara Home",       name:"Manta Bebé Algodón Puntos",                    price:25.99, emoji:"🧸", img:"https://static.zarahome.net/assets/public/28e6/6f95/50bd4956b616/fdf87d1e5467/41605004712-a7/41605004712-a7.jpg?ts=1773313536918&f=auto&w=479" },
+    { id:24, brand:"Micuna",          name:"Kit Colecho",                                  price:64.00, emoji:"🛏️", img:"https://bebesvictoria.es/131924-large_default/kit-colecho-cp-2007-be2in-cuna-con-puente-micuna.webp" },
+    { id:25, brand:"Joie",            name:"Hamaca Dreamer de Joie",                       price:85.00, emoji:"👶", img:"https://www.mamasandpapas.com/cdn/shop/files/joie-rockers-joie-dreamer-rocker-strata-acorn-wood-1221501100_1024x1024@2x.jpg?v=1771929251" },
+    { id:26, brand:"Jane",            name:"Cuna Colecho Baby Side",                       price:212.00,emoji:"🛏️", img:"https://janeworld.com/24769-large_default/cuna-colecho-baby-side.webp" },
+    { id:27, brand:"Jane",            name:"Trona Evolutiva Plegable de Madera",           price:239.00,emoji:"🪑", img:"https://janeworld.com/24653-large_default/trona-evolutiva-plegable-de-madera-forest.webp" },
+    { id:28, brand:"Minicoton",       name:"Protector Tirantes",                           price:24.90, emoji:"🛒", img:"https://minicoton.com/cdn/shop/files/670341-1_-7YcJksuk.png?v=1752435581" },
+    { id:29, brand:"Minicoton",       name:"Colchoneta",                                   price:49.90, emoji:"🛒", img:"https://minicoton.com/cdn/shop/files/670310-1_Eb-ocLIneU.png?v=1752435554" },
+  ];
+
+  // Load items from adminItems (shared with admin page) or fall back to defaults
+  function loadItems() {
+    try {
+      const s = localStorage.getItem("adminItems");
+      if (s) return JSON.parse(s);
+    } catch(e) {}
+    return DEFAULT_ITEMS;
+  }
+  let items = loadItems();
+
+  function fmtEur(n) { return "€" + n.toFixed(2).replace(".", ","); }
+
+  function loadGifted() {
+    try { return JSON.parse(localStorage.getItem("gifted") || "[]"); } catch { return []; }
+  }
+  function saveGifted(arr) { localStorage.setItem("gifted", JSON.stringify(arr)); }
+
+  function loadGiftedBy() {
+    try { return JSON.parse(localStorage.getItem("giftedBy") || "{}"); } catch { return {}; }
+  }
+  function saveGiftedBy(obj) { localStorage.setItem("giftedBy", JSON.stringify(obj)); }
+
+  let gifted   = loadGifted();
+  let giftedBy = loadGiftedBy();
+  let currentItemId = null;
+
+  function buildUrl(item, name) {
+    const note = (name ? name.trim() + " - " : "") + item.name;
+    return REVOLUT_BASE + Math.round(item.price * 100) + "&note=" + encodeURIComponent(note);
+  }
+
+  function onNameInput() {
+    const hasName = document.getElementById("giftName").value.trim().length > 0;
+    const btn = document.getElementById("btnNext");
+    btn.style.opacity = hasName ? "1" : ".4";
+    btn.style.pointerEvents = hasName ? "auto" : "none";
+  }
+
+  function clickNext() {
+    const name = document.getElementById("giftName").value.trim();
+    if (!name) return;
+    const item = items.find(i => i.id === currentItemId);
+    if (!item) return;
+    // Build URL with name
+    const url = buildUrl(item, name);
+    document.getElementById("modalOpenBtn").href = url;
+    document.getElementById("displayName").textContent = name;
+    // Switch steps
+    document.getElementById("stepName").style.display = "none";
+    document.getElementById("stepPay").style.display = "block";
+  }
+
+  function openModal(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    currentItemId = id;
+    document.getElementById("modalEmoji").textContent = item.emoji;
+    document.getElementById("modalTitle").textContent = item.brand;
+    document.getElementById("modalItem").textContent = item.name;
+    document.getElementById("modalPrice").textContent = fmtEur(item.price);
+    document.getElementById("giftName").value = "";
+    // Reset to step 1
+    document.getElementById("stepName").style.display = "block";
+    document.getElementById("stepPay").style.display = "none";
+    document.getElementById("confirmSection").style.display = "none";
+    document.getElementById("confirmMsg").textContent = "🔔 ¿Has completado el pago con tarjeta?";
+    document.getElementById("confirmBtn").textContent = "✅  Sí, ya he pagado";
+    const btn = document.getElementById("btnNext");
+    btn.style.opacity = ".4";
+    btn.style.pointerEvents = "none";
+    document.getElementById("payModal").classList.add("open");
+    setTimeout(function() { document.getElementById("giftName").focus(); }, 100);
+  }
+
+  function onRevolutClicked() {
+    document.getElementById("stepPay").style.display = "none";
+    document.getElementById("confirmSection").style.display = "block";
+  }
+
+  function onCashClicked() {
+    document.getElementById("confirmMsg").textContent =
+      "💵 ¿Te gustaría reservar este artículo y darle el dinero a Paula en mano?";
+    document.getElementById("confirmBtn").textContent = "💵  Sí, daré el dinero";
+    document.getElementById("stepPay").style.display = "none";
+    document.getElementById("confirmSection").style.display = "block";
+  }
+
+  function confirmPaid() {
+    const name = document.getElementById("giftName").value.trim();
+    const id = currentItemId;
+    currentItemId = null;
+    document.getElementById("confirmSection").style.display = "none";
+    document.getElementById("payModal").classList.remove("open");
+    if (id !== null) { markGifted(id, name); }
+  }
+
+  function closeModal() {
+    document.getElementById("payModal").classList.remove("open");
+    currentItemId = null;
+  }
+
+  function copyLink() {
+    const input = document.getElementById("modalLinkInput");
+    const btn = document.querySelector(".btn-copy");
+    navigator.clipboard.writeText(input.value).then(() => {
+      btn.textContent = "¡Copiado! ✓";
+      setTimeout(() => { btn.textContent = "Copiar"; }, 2000);
+    }).catch(() => {
+      input.select();
+      document.execCommand("copy");
+      btn.textContent = "¡Copiado! ✓";
+      setTimeout(() => { btn.textContent = "Copiar"; }, 2000);
+    });
+  }
+
+  document.getElementById("payModal").addEventListener("click", function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  function markGifted(id, name) {
+    if (!gifted.includes(id)) { gifted.push(id); saveGifted(gifted); }
+    if (name) { giftedBy[id] = name; saveGiftedBy(giftedBy); }
+    renderAll();
+  }
+
+  function resetAll() {
+    gifted = [];
+    giftedBy = {};
+    saveGifted(gifted);
+    saveGiftedBy(giftedBy);
+    renderAll();
+  }
+
+
+  let selected = [];
+
+  function toggleSelect(id) {
+    const idx = selected.indexOf(id);
+    if (idx === -1) selected.push(id); else selected.splice(idx, 1);
+    renderAll();
+  }
+
+  function clearSelection() { selected = []; renderAll(); }
+
+  function updateGiftBar() {
+    const selItems = items.filter(i => selected.includes(i.id) && !gifted.includes(i.id));
+    const fab = document.getElementById("fabRegalar");
+    const n   = selItems.length;
+    if (n === 0) {
+      fab.classList.remove("active");
+    } else {
+      const total = selItems.reduce((s, i) => s + i.price, 0);
+      document.getElementById("fabCount").textContent = n + " artículo" + (n > 1 ? "s" : "");
+      document.getElementById("fabTotal").textContent = fmtEur(total);
+      fab.classList.add("active");
+    }
+  }
+
+  function renderAll() {
+    const grid = document.getElementById("itemsGrid");
+    grid.innerHTML = "";
+    items.forEach(function(item) {
+      const isGifted = gifted.includes(item.id);
+      const card = document.createElement("div");
+      const isSelected = selected.includes(item.id);
+      card.className = "card" + (isGifted ? " gifted" : "") + (isSelected && !isGifted ? " selected" : "");
+      const imgSrc = item.img
+        ? (item.img.startsWith('http') ? item.img : BASE + item.img)
+        : null;
+      const imgHtml = imgSrc
+        ? '<img src="' + imgSrc + '" alt="' + item.name + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'">' +
+          '<span class="emoji-fallback" style="display:none">' + item.emoji + '</span>'
+        : '<span class="emoji-fallback">' + item.emoji + '</span>';
+
+      const footerHtml = isGifted
+        ? '<div class="btn-gifted">\u2705\u00a0\u00a0\u00a1Ya reservado!</div>'
+        : '<button class="btn-select' + (isSelected ? ' btn-select-active' : '') + '" onclick="toggleSelect(' + item.id + ')">' +
+            (isSelected ? '\u2713\u00a0 Seleccionado' : 'Seleccionar') +
+          '</button>';
+
+      card.innerHTML =
+        '<div class="gifted-banner">Reservado \u2713</div>' +
+        '<div class="card-emoji">' + imgHtml + '</div>' +
+        '<div class="card-body">' +
+          '<div class="card-brand">' + item.brand + '</div>' +
+          '<div class="card-name">' + item.name + '</div>' +
+          '<div class="card-price">' + fmtEur(item.price) + '</div>' +
+        '</div>' +
+        '<div class="card-footer">' + footerHtml + '</div>';
+      grid.appendChild(card);
+    });
+    updateGiftBar();
+  }
+
+  // ── Multi-item modal ────────────────────────────────────────
+  function openMultiModal() {
+    const selItems = items.filter(i => selected.includes(i.id) && !gifted.includes(i.id));
+    if (selItems.length === 0) return;
+    const total = selItems.reduce((s, i) => s + i.price, 0);
+    document.getElementById("mItemList").innerHTML =
+      selItems.map(i => '• ' + i.brand + ' – ' + i.name + ' <span style="color:var(--sage);font-weight:700;">' + fmtEur(i.price) + '</span>').join('<br>');
+    document.getElementById("mTotalPrice").textContent = fmtEur(total);
+    document.getElementById("mName").value = "";
+    document.getElementById("mStepName").style.display = "block";
+    document.getElementById("mStepPay").style.display = "none";
+    document.getElementById("mConfirmSection").style.display = "none";
+    const btn = document.getElementById("mBtnName");
+    btn.style.opacity = ".4"; btn.style.pointerEvents = "none";
+    document.getElementById("mConfirmBtn").textContent = "\u2705\u00a0 S\u00ed, ya he pagado";
+    document.getElementById("multiModal").classList.add("open");
+    setTimeout(function() { document.getElementById("mName").focus(); }, 100);
+  }
+
+  function closeMultiModal() {
+    document.getElementById("multiModal").classList.remove("open");
+  }
+
+  document.getElementById("multiModal").addEventListener("click", function(e) {
+    if (e.target === this) closeMultiModal();
+  });
+
+  function onMNameInput() {
+    const has = document.getElementById("mName").value.trim().length > 0;
+    const btn = document.getElementById("mBtnName");
+    btn.style.opacity = has ? "1" : ".4";
+    btn.style.pointerEvents = has ? "auto" : "none";
+  }
+
+  function clickMName() {
+    const name = document.getElementById("mName").value.trim();
+    if (!name) return;
+    const selItems = items.filter(i => selected.includes(i.id) && !gifted.includes(i.id));
+    const total = selItems.reduce((s, i) => s + i.price, 0);
+    const cents = Math.round(total * 100);
+    const note = encodeURIComponent(name + " - " + selItems.map(i => i.name).join(", "));
+    const url = "https://revolut.me/nqusai?currency=EUR&amount=" + cents + "&note=" + note;
+    document.getElementById("mDisplayName").textContent = name;
+    document.getElementById("mPayBtn").href = url;
+    document.getElementById("mStepName").style.display = "none";
+    document.getElementById("mStepPay").style.display = "block";
+  }
+
+  function onMRevolutClicked() {
+    document.getElementById("mStepPay").style.display = "none";
+    document.getElementById("mConfirmMsg").textContent = "\uD83D\uDD14 \u00bfHas completado el pago con tarjeta?";
+    document.getElementById("mConfirmBtn").textContent = "\u2705\u00a0 S\u00ed, ya he pagado";
+    document.getElementById("mConfirmSection").style.display = "block";
+  }
+
+  function onMCashClicked() {
+    document.getElementById("mStepPay").style.display = "none";
+    document.getElementById("mConfirmMsg").textContent = "\uD83D\uDCB5 \u00bfTe gustar\u00eda reservar estos art\u00edculos y darle el dinero a Paula en mano?";
+    document.getElementById("mConfirmBtn").textContent = "\uD83D\uDCB5\u00a0 S\u00ed, dar\u00e9 el dinero";
+    document.getElementById("mConfirmSection").style.display = "block";
+  }
+
+  function confirmMultiPaid() {
+    const name = document.getElementById("mName").value.trim();
+    const selItems = items.filter(i => selected.includes(i.id) && !gifted.includes(i.id));
+    document.getElementById("multiModal").classList.remove("open");
+    document.getElementById("mConfirmSection").style.display = "none";
+    // Mark all items at once — no intermediate renderAll calls
+    selItems.forEach(function(item) {
+      if (!gifted.includes(item.id)) gifted.push(item.id);
+      if (name) giftedBy[item.id] = name;
+    });
+    saveGifted(gifted);
+    saveGiftedBy(giftedBy);
+    selected = [];
+    renderAll();
+  }
+
+  renderAll();
+</script>
+<!-- ── CONTRIBUTION MODAL ─────────────────────────────────── -->
+<div class="modal-overlay" id="contribModal">
+  <div class="modal">
+    <div class="modal-emoji">💚</div>
+
+    <!-- Step 1: Name -->
+    <div id="cStepName">
+      <h2>¡Muchas gracias!</h2>
+      <div class="modal-item" style="margin-bottom:16px;">¿Cómo te llamas?</div>
+      <p style="font-size:.82rem;color:#666;margin-bottom:6px;text-align:left;font-weight:600;">
+        Tu nombre: <span style="color:#e57373;">*</span>
+      </p>
+      <input type="text" id="cName" placeholder="Ej: María García"
+        oninput="onCNameInput()" onkeydown="if(event.key==='Enter')clickCName()"
+        style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;
+               font-size:.9rem;outline:none;margin-bottom:14px;box-sizing:border-box;"
+        onfocus="this.style.borderColor='var(--sage)'"
+        onblur="this.style.borderColor='#e0e0e0'" />
+      <button id="cBtnName" onclick="clickCName()"
+        style="width:100%;padding:12px;background:var(--sage);color:#fff;border:none;
+               border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;
+               opacity:.4;pointer-events:none;transition:opacity .2s;">
+        Siguiente →
+      </button>
+    </div>
+
+    <!-- Step 2: Amount -->
+    <div id="cStepAmount" style="display:none;">
+      <h2 id="cGreeting"></h2>
+      <div class="modal-item" style="margin-bottom:16px;">¿Cuánto quieres contribuir?</div>
+      <p style="font-size:.82rem;color:#666;margin-bottom:6px;text-align:left;font-weight:600;">
+        Importe (€): <span style="color:#e57373;">*</span>
+      </p>
+      <input type="number" id="cAmount" placeholder="Ej: 25" min="1" step="1"
+        oninput="onCAmountInput()" onkeydown="if(event.key==='Enter')clickCAmount()"
+        style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;
+               font-size:.9rem;outline:none;margin-bottom:14px;box-sizing:border-box;"
+        onfocus="this.style.borderColor='var(--sage)'"
+        onblur="this.style.borderColor='#e0e0e0'" />
+      <button id="cBtnAmount" onclick="clickCAmount()"
+        style="width:100%;padding:12px;background:var(--sage);color:#fff;border:none;
+               border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;
+               opacity:.4;pointer-events:none;transition:opacity .2s;">
+        Siguiente →
+      </button>
+    </div>
+
+    <!-- Step 3: Pay button -->
+    <div id="cStepPay" style="display:none;">
+      <h2 id="cPayTitle"></h2>
+      <div class="modal-price" id="cPayAmount"></div>
+      <p style="font-size:.9rem;color:var(--text);margin:12px 0 16px;">
+        Haz clic para completar tu contribución con Revolut:
+      </p>
+      <a class="btn-open" id="cPayBtn" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
+        Pagar online con tarjeta
+      </a>
+    </div>
+
+    <button class="btn-modal-close" style="margin-top:14px;" onclick="closeContrib()">✕ Cerrar</button>
+  </div>
+</div>
+
+<script>
+  // ── Contribution modal ──────────────────────────────────────
+  function openContrib() {
+    document.getElementById("cName").value = "";
+    document.getElementById("cAmount").value = "";
+    document.getElementById("cStepName").style.display = "block";
+    document.getElementById("cStepAmount").style.display = "none";
+    document.getElementById("cStepPay").style.display = "none";
+    const b = document.getElementById("cBtnName");
+    b.style.opacity = ".4"; b.style.pointerEvents = "none";
+    document.getElementById("contribModal").classList.add("open");
+    setTimeout(function() { document.getElementById("cName").focus(); }, 100);
+  }
+
+  function closeContrib() {
+    document.getElementById("contribModal").classList.remove("open");
+  }
+
+  document.getElementById("contribModal").addEventListener("click", function(e) {
+    if (e.target === this) closeContrib();
+  });
+
+  function onCNameInput() {
+    const has = document.getElementById("cName").value.trim().length > 0;
+    const b = document.getElementById("cBtnName");
+    b.style.opacity = has ? "1" : ".4";
+    b.style.pointerEvents = has ? "auto" : "none";
+  }
+
+  function clickCName() {
+    const name = document.getElementById("cName").value.trim();
+    if (!name) return;
+    document.getElementById("cGreeting").textContent = "Hola " + name + "! 👋";
+    document.getElementById("cStepName").style.display = "none";
+    document.getElementById("cStepAmount").style.display = "block";
+    const b = document.getElementById("cBtnAmount");
+    b.style.opacity = ".4"; b.style.pointerEvents = "none";
+    setTimeout(function() { document.getElementById("cAmount").focus(); }, 100);
+  }
+
+  function onCAmountInput() {
+    const val = parseFloat(document.getElementById("cAmount").value);
+    const has = !isNaN(val) && val > 0;
+    const b = document.getElementById("cBtnAmount");
+    b.style.opacity = has ? "1" : ".4";
+    b.style.pointerEvents = has ? "auto" : "none";
+  }
+
+  function clickCAmount() {
+    const name = document.getElementById("cName").value.trim();
+    const val  = parseFloat(document.getElementById("cAmount").value);
+    if (!name || isNaN(val) || val <= 0) return;
+    const cents = Math.round(val * 100);
+    const note  = encodeURIComponent(name + " - Contribución regalo bebé");
+    const url   = "https://revolut.me/nqusai?currency=EUR&amount=" + cents + "&note=" + note;
+    document.getElementById("cPayTitle").textContent  = "¡Gracias, " + name + "! 🎉";
+    document.getElementById("cPayAmount").textContent = "€" + val.toFixed(2).replace(".", ",");
+    document.getElementById("cPayBtn").href = url;
+    document.getElementById("cStepAmount").style.display = "none";
+    document.getElementById("cStepPay").style.display = "block";
+    try { window.open(url, "_blank", "noopener,noreferrer"); } catch(e) {}
+  }
+</script>
+</body>
+</html>
