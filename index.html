@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🍼 Lista de Bebé – Paula</title>
+  <title>🍼 Lista de bebé – Paula</title>
   <style>
     :root {
       --sage:    #7a9e87;
@@ -175,6 +175,79 @@
       0% { transform: translateX(-50%) scale(1.05); }
       50% { transform: translateX(-50%) scale(1.15); box-shadow: 0 12px 40px rgba(122,158,135,.8); }
       100% { transform: translateX(-50%) scale(1.05); }
+    }
+    
+    /* ── FULL SCREEN DUCK LOADING ANIMATION ───────────────────────────── */
+    #fullScreenLoader {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: var(--cream);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+    }
+    
+    .pond {
+      position: relative;
+      width: 100%;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .duck-parade {
+      display: flex;
+      /* Reverse the order so Mama duck is on the left side leading the parade */
+      flex-direction: row-reverse; 
+      align-items: flex-end;
+      gap: 12px;
+      /* The ducks swim slowly from right to left */
+      animation: swimAcross 8s linear infinite;
+    }
+    
+    .duck-parade span {
+      display: inline-block;
+      /* Flip the ducks to face left instead of right */
+      transform: scaleX(-1);
+      /* The ducks bob up and down as they swim */
+      animation: duckBob 1s ease-in-out infinite alternate;
+    }
+    
+    .duck-parade .mama { 
+      font-size: 6rem; /* Huge mama duck */
+    }
+    
+    .duck-parade .baby1 { font-size: 2.8rem; animation-delay: 0.2s; margin-bottom: 5px; }
+    .duck-parade .baby2 { font-size: 2.5rem; animation-delay: 0.4s; margin-bottom: 5px; }
+    .duck-parade .baby3 { font-size: 2.2rem; animation-delay: 0.6s; margin-bottom: 5px; }
+    
+    @keyframes swimAcross {
+      0% { transform: translateX(0vw); opacity: 1; }
+      100% { transform: translateX(150vw); opacity: 1; }
+    }
+    
+    @keyframes duckBob {
+      0% { transform: translateY(0) rotate(2deg) scaleX(-1); }
+      100% { transform: translateY(-20px) rotate(-4deg) scaleX(-1); }
+    }
+    
+    .loading-text {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--sage);
+      margin-top: 20px;
+      letter-spacing: 0.05em;
+      animation: pulseText 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes pulseText {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
     }
     
     /* ── FLY TO CART ANIMATION ────────────────────────────── */
@@ -389,11 +462,24 @@
 </head>
 <body>
 
+<!-- ── FULL SCREEN LOADER ────────────────────────────────── -->
+<div id="fullScreenLoader">
+  <div class="pond">
+    <div class="duck-parade">
+      <span class="mama">🦆</span>
+      <span class="baby1">🐥</span>
+      <span class="baby2">🐥</span>
+      <span class="baby3">🐥</span>
+    </div>
+  </div>
+  <div class="loading-text">Preparando la lista de bebé...</div>
+</div>
+
 <!-- ── HERO ──────────────────────────────────────────────── -->
 <div class="hero">
   <span class="hero-emoji">🍼</span>
-  <h1 id="heroTitle">Lista de Bebé de Paula y Nas</h1>
-  <p id="heroSubtitle">¡Ayúdanos a dar la bienvenida a nuestro pequeño!</p>
+  <h1 id="heroTitle">Lista de bebé de Paula y Nas</h1>
+  <p id="heroSubtitle">!</p>
 </div>
 
 
@@ -555,7 +641,7 @@
 
   async function loadData() {
     const grid = document.getElementById("itemsGrid");
-    grid.innerHTML = "<p style='text-align:center;width:100%;color:var(--muted);margin-top:20px;'>Cargando lista de bebé...</p>";
+    grid.innerHTML = "";
     try {
       const res = await fetch(SCRIPT_URL);
       const json = await res.json();
@@ -567,7 +653,12 @@
       }
     } catch(e) {
       console.error(e);
-      grid.innerHTML = "<p style='text-align:center;width:100%;color:red;margin-top:20px;'>Error al cargar los datos. Verifica el Google Script.</p>";
+      grid.innerHTML = "<p style='text-align:center;width:100%;color:red;margin-top:20px;'>Error al cargar los datos.</p>";
+    } finally {
+      // Hide loader and show content
+      const loader = document.getElementById("fullScreenLoader");
+      loader.style.opacity = "0";
+      setTimeout(() => { loader.style.display = "none"; }, 600);
     }
   }
 
