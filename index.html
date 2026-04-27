@@ -443,7 +443,7 @@
         🔔 ¿Has completado el pago con tarjeta?
       </p>
       <button id="mConfirmBtn" class="btn-confirm-paid" onclick="confirmMultiPaid()">
-        ✅ &nbsp;Sí, ya he pagado
+        ✅ &nbsp;Sí
       </button>
     </div>
 
@@ -504,7 +504,7 @@
         🔔 ¿Has completado el pago con tarjeta?
       </p>
       <button id="confirmBtn" class="btn-confirm-paid" onclick="confirmPaid()">
-        ✅ &nbsp;Sí, ya he pagado
+        ✅ &nbsp;Sí
       </button>
     </div>
 
@@ -617,7 +617,7 @@
     currentPaymentMethod = 'card';
     document.getElementById("stepPay").style.display = "none";
     document.getElementById("confirmMsg").textContent = "🔔 ¿Has completado el pago con tarjeta?";
-    document.getElementById("confirmBtn").textContent = "✅  Sí, ya he pagado";
+    document.getElementById("confirmBtn").textContent = "✅  Sí";
     document.getElementById("confirmSection").style.display = "block";
   }
 
@@ -729,7 +729,7 @@
     document.getElementById("mConfirmSection").style.display = "none";
     const btn = document.getElementById("mBtnName");
     btn.style.opacity = ".4"; btn.style.pointerEvents = "none";
-    document.getElementById("mConfirmBtn").textContent = "\u2705\u00a0 Sí, ya he pagado";
+    document.getElementById("mConfirmBtn").textContent = "\u2705\u00a0 Sí";
     document.getElementById("multiModal").classList.add("open");
     setTimeout(function() { document.getElementById("mName").focus(); }, 100);
   }
@@ -767,7 +767,7 @@
     mCurrentPaymentMethod = 'card';
     document.getElementById("mStepPay").style.display = "none";
     document.getElementById("mConfirmMsg").textContent = "🔔 ¿Has completado el pago con tarjeta?";
-    document.getElementById("mConfirmBtn").textContent = "✅  Sí, ya he pagado";
+    document.getElementById("mConfirmBtn").textContent = "✅  Sí";
     document.getElementById("mConfirmSection").style.display = "block";
   }
 
