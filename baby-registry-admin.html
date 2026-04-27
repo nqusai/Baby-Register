@@ -316,106 +316,99 @@
 </div>
 
 <script>
-  // ── Data ───────────────────────────────────────────────────
   const BASE = "https://www.bebecenter.es/";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6If8CnK6bQx2iZhZ3q91z4xJpUmTF-oiaWF5ZmS3fhueVKabG67L735x6mPMXqWhZ/exec";
 
-  const DEFAULT_ITEMS = [
-    { id:7,  brand:"Momcozy",         name:"Lima",                                         price:29.99, emoji:"💅", img:"https://www.bebecenter.es/52271-superlarge_default_2x/lima-electrica-unas-bebe-nc02-unico-verde.jpg" },
-    { id:10, brand:"Bimbidreams",     name:"Toquilla Tricot 75×90 cm – Bambú Beige",      price:31.90, emoji:"🧣", img:"46833-large_default/toquilla-tricot-75x90cm-bambu-blanco.jpg" },
-    { id:12, brand:"Cambrass",        name:"Bajera Ajustable Minicuna 50×90 – Blanco",    price:16.50, emoji:"🛏️", img:"16093-large_default/bajera-ajustable-impermeable-tencel-minicuna-50x90x1cm-liso-e-blanco.jpg" },
-    { id:13, brand:"Cambrass",        name:"Bajera Ajustable Cuna 60×120 – Blanco",       price:20.10, emoji:"🛏️", img:"10433-large_default/bajera-ajustable-impermeable-tencel-c60-60x120-cm-liso-e-blanco.jpg" },
-    { id:14, brand:"Jane",            name:"Esponja Natural (pack 2)",                     price:7.95,  emoji:"🛁", img:"5460-large_default/esponja-natural-2-uds-jane.jpg" },
-    { id:15, brand:"Suavinex",        name:"Chupete ZeroZero Silicona -2/+2M",             price:9.25,  emoji:"🍬", img:"https://www.bebecenter.es/50490-superlarge_default_2x/chupete-zerozero-silicona-22m.jpg" },
-    { id:16, brand:"Minicoton",       name:"Bolso Carro",                                  price:99.90, emoji:"🧺", img:"https://minicoton.com/cdn/shop/files/670175-1_lyQuopE-d.png?v=1752434454&width=1400" },
-    { id:17, brand:"Minicoton",       name:"Bajera Beige",                                 price:19.90, emoji:"🛏️", img:"https://minicoton.com/cdn/shop/files/153971-1_phKRJ0aPi.jpg?v=1752435724&width=1400" },
-    { id:18, brand:"Minicoton",       name:"Bajera Blanco",                                price:19.90, emoji:"🛏️", img:"https://minicoton.com/cdn/shop/files/153963-1_mqZt3-Kz1A.jpg?v=1752435621&width=1400" },
-    { id:19, brand:"Zara Home",       name:"Lámpara Quitamiedos Infantil Oso",             price:12.99, emoji:"🐻", img:"https://static.zarahome.net/assets/public/a49d/5fd8/e0744cf2b7cd/e3e644aa7061/42682763450-p1/42682763450-p1.jpg?ts=1742990028671&f=auto&w=957&f=auto" },
-    { id:20, brand:"Zara Home",       name:"Cesta Ondas Mediana",                          price:19.99, emoji:"🧺", img:"https://static.zarahome.net/assets/public/6017/4dbd/70954490b492/875ebb04b764/46670049052-p1/46670049052-p1.jpg?ts=1770217770708&f=auto&w=957&f=auto" },
-    { id:21, brand:"Zara Home",       name:"Toalla Baño Capucha Bebé Estrellas",           price:19.99, emoji:"🛁", img:"https://static.zarahome.net/assets/public/30a9/c5e6/49594e9d8553/adc6c8531f4d/46640423251-p1/46640423251-p1.jpg?ts=1721748356952&f=auto&w=957&f=auto" },
-    { id:22, brand:"Zara Home",       name:"Manta Polar Bebé Algodón",                     price:19.99, emoji:"🧸", img:"https://static.zarahome.net/assets/public/8f77/2aa0/d3724f469f05/7612d34db194/41608004500-a7/41608004500-a7.jpg?ts=1771919163337&f=auto&w=479" },
-    { id:23, brand:"Zara Home",       name:"Manta Bebé Algodón Puntos",                    price:25.99, emoji:"🧸", img:"https://static.zarahome.net/assets/public/28e6/6f95/50bd4956b616/fdf87d1e5467/41605004712-a7/41605004712-a7.jpg?ts=1773313536918&f=auto&w=479" },
-    { id:24, brand:"Micuna",          name:"Kit Colecho",                                  price:64.00, emoji:"🛏️", img:"https://bebesvictoria.es/131924-large_default/kit-colecho-cp-2007-be2in-cuna-con-puente-micuna.webp" },
-    { id:25, brand:"Joie",            name:"Hamaca Dreamer de Joie",                       price:85.00, emoji:"👶", img:"https://www.mamasandpapas.com/cdn/shop/files/joie-rockers-joie-dreamer-rocker-strata-acorn-wood-1221501100_1024x1024@2x.jpg?v=1771929251" },
-    { id:26, brand:"Jane",            name:"Cuna Colecho Baby Side",                       price:212.00,emoji:"🛏️", img:"https://janeworld.com/24769-large_default/cuna-colecho-baby-side.webp" },
-    { id:27, brand:"Jane",            name:"Trona Evolutiva Plegable de Madera",           price:239.00,emoji:"🪑", img:"https://janeworld.com/24653-large_default/trona-evolutiva-plegable-de-madera-forest.webp" },
-    { id:28, brand:"Minicoton",       name:"Protector Tirantes",                           price:24.90, emoji:"🛒", img:"https://minicoton.com/cdn/shop/files/670341-1_-7YcJksuk.png?v=1752435581" },
-    { id:29, brand:"Minicoton",       name:"Colchoneta",                                   price:49.90, emoji:"🛒", img:"https://minicoton.com/cdn/shop/files/670310-1_Eb-ocLIneU.png?v=1752435554" },
-  ];
+  let items = [];
 
-  function loadItems() {
+  function fmtEur(n) { return "€" + Number(n).toFixed(2).replace(".", ","); }
+
+  async function loadData() {
+    const grid = document.getElementById("itemsGrid");
+    grid.innerHTML = "<p style='text-align:center;width:100%;color:var(--muted);'>Cargando datos desde Google Sheets...</p>";
     try {
-      const s = localStorage.getItem("adminItems");
-      if (s) return JSON.parse(s);
-    } catch(e) {}
-    saveItems(DEFAULT_ITEMS);
-    return DEFAULT_ITEMS.slice();
+      const res = await fetch(SCRIPT_URL);
+      const json = await res.json();
+      if (json.status === "success") {
+        document.getElementById("heroTitleInput").value = json.data.title || "";
+        document.getElementById("heroSubtitleInput").value = json.data.subtitle || "";
+        items = json.data.items.map(i => Object.assign({}, i, { emoji: "🎁", price: Number(i.price) }));
+        renderAll();
+      }
+    } catch(e) {
+      console.error(e);
+      grid.innerHTML = "<p style='text-align:center;width:100%;color:red;'>Error al cargar los datos.</p>";
+    }
   }
-  function saveItems(arr) { localStorage.setItem("adminItems", JSON.stringify(arr)); }
 
-  let items = loadItems();
-
-  function fmtEur(n) { return "€" + n.toFixed(2).replace(".", ","); }
-
-  function loadGifted() {
-    try { return JSON.parse(localStorage.getItem("gifted") || "[]"); } catch { return []; }
+  async function postAction(action, payload) {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: action, payload: payload })
+      });
+    } catch (e) {
+      console.error(e);
+      alert("Hubo un error al guardar en Google Sheets.");
+    }
   }
-  function saveGifted(arr) { localStorage.setItem("gifted", JSON.stringify(arr)); }
 
-  function loadGiftedBy() {
-    try { return JSON.parse(localStorage.getItem("giftedBy") || "{}"); } catch { return {}; }
-  }
-  function saveGiftedBy(obj) { localStorage.setItem("giftedBy", JSON.stringify(obj)); }
-
-  let gifted   = loadGifted();
-  let giftedBy = loadGiftedBy();
-
-  function markGifted(id) {
-    if (!gifted.includes(id)) { gifted.push(id); saveGifted(gifted); }
+  async function markGifted(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    item.gifted = true;
+    item.giftedBy = "Admin";
     renderAll();
+    await postAction("reserve", { ids: [id], giftedBy: "Admin", paymentMethod: "cash" });
   }
-  function resetItem(id) {
-    gifted = gifted.filter(g => g !== id);
-    delete giftedBy[id];
-    saveGifted(gifted);
-    saveGiftedBy(giftedBy);
+
+  async function resetItem(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    item.gifted = false;
+    item.giftedBy = "";
+    item.paymentMethod = "";
     renderAll();
+    await postAction("reset", { ids: [id] });
   }
-  function markAll() {
-    gifted = items.map(i => i.id);
-    saveGifted(gifted);
+
+  async function markAll() {
+    if (!confirm("¿Seguro que quieres marcar todos como regalados?")) return;
+    items.forEach(i => { i.gifted = true; i.giftedBy = "Admin"; i.paymentMethod = "cash"; });
     renderAll();
+    await postAction("markAll", {});
   }
-  function resetAll() {
-    gifted = [];
-    giftedBy = {};
-    saveGifted(gifted);
-    saveGiftedBy(giftedBy);
+
+  async function resetAll() {
+    if (!confirm("¿Seguro que quieres resetear todos los artículos?")) return;
+    items.forEach(i => { i.gifted = false; i.giftedBy = ""; i.paymentMethod = ""; });
     renderAll();
+    await postAction("resetAll", {});
   }
 
   function updateProgress() {
-    const total       = items.reduce((s, i) => s + i.price, 0);
-    const giftedTotal = items.filter(i => gifted.includes(i.id)).reduce((s, i) => s + i.price, 0);
-    const pct = (giftedTotal / total * 100).toFixed(0);
+    const total = items.reduce((s, i) => s + i.price, 0);
+    const giftedItems = items.filter(i => i.gifted);
+    const giftedTotal = giftedItems.reduce((s, i) => s + i.price, 0);
+    const pct = total > 0 ? (giftedTotal / total * 100).toFixed(0) : 0;
+    
     document.getElementById("progressFill").style.width = pct + "%";
     document.getElementById("progressText").textContent =
-      gifted.length + " de " + items.length + " artículos regalados · " +
+      giftedItems.length + " de " + items.length + " artículos regalados · " +
       fmtEur(giftedTotal) + " de " + fmtEur(total);
     document.getElementById("toolbarStatus").textContent =
-      gifted.length + " regalados · " + (items.length - gifted.length) + " disponibles";
+      giftedItems.length + " regalados · " + (items.length - giftedItems.length) + " disponibles";
   }
 
   function renderAll() {
     const grid = document.getElementById("itemsGrid");
     grid.innerHTML = "";
     items.forEach(function(item) {
-      const isGifted = gifted.includes(item.id);
-      const imgSrc = item.img
-        ? (item.img.startsWith('http') ? item.img : BASE + item.img)
-        : null;
+      const isGifted = item.gifted;
+      const imgSrc = item.img ? (item.img.startsWith('http') ? item.img : BASE + item.img) : null;
       const imgHtml = imgSrc
-        ? '<img src="' + imgSrc + '" alt="' + item.name + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'">' +
-          '<span class="emoji-fallback" style="display:none">' + item.emoji + '</span>'
+        ? '<img src="' + imgSrc + '" alt="' + item.name + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'"><span class="emoji-fallback" style="display:none">' + item.emoji + '</span>'
         : '<span class="emoji-fallback">' + item.emoji + '</span>';
 
       const card = document.createElement("div");
@@ -429,12 +422,12 @@
           '<div class="card-brand">' + item.brand + '</div>' +
           '<div class="card-name">'  + item.name  + '</div>' +
           '<div class="card-price">' + fmtEur(item.price) + '</div>' +
-          (isGifted && giftedBy[item.id]
-            ? '<div style="margin-top:8px;padding:7px 10px;background:#d4edda;border-radius:8px;font-size:.8rem;color:#2d6a4f;font-weight:600;">🎁 Regalado por: ' + giftedBy[item.id] + '</div>'
+          (isGifted && item.giftedBy
+            ? '<div style="margin-top:8px;padding:7px 10px;background:#d4edda;border-radius:8px;font-size:.8rem;color:#2d6a4f;font-weight:600;">🎁 ' + item.giftedBy + (item.paymentMethod ? ' (' + item.paymentMethod + ')' : '') + '</div>'
             : '') +
         '</div>' +
         '<div class="card-admin">' +
-          '<button class="btn-gift"  onclick="markGifted(' + item.id + ')">✅ Marcar como regalado</button>' +
+          '<button class="btn-gift"  onclick="markGifted(' + item.id + ')">✅ Marcar</button>' +
           '<button class="btn-reset" onclick="resetItem('  + item.id + ')">🔄 Resetear</button>' +
           '<button class="btn-tool" style="width:100%;margin-top:6px;background:#f3f4f6;color:#3a3530;" onclick="openEditModal(' + item.id + ')">✏️ Editar</button>' +
         '</div>';
@@ -442,32 +435,20 @@
     });
     updateProgress();
   }
-  renderAll();
 
-  // ── Hero text ──────────────────────────────────────────────
-  const DEFAULT_TITLE    = "Lista de Bebé de Paula y Nas";
-  const DEFAULT_SUBTITLE = "¡Ayúdanos a dar la bienvenida a nuestro pequeño!";
-
-  function loadHeroText() {
-    document.getElementById("heroTitleInput").value =
-      localStorage.getItem("heroTitle") || DEFAULT_TITLE;
-    document.getElementById("heroSubtitleInput").value =
-      localStorage.getItem("heroSubtitle") || DEFAULT_SUBTITLE;
-  }
-
-  function saveHeroText() {
-    const title    = document.getElementById("heroTitleInput").value.trim() || DEFAULT_TITLE;
+  async function saveHeroText() {
+    const title = document.getElementById("heroTitleInput").value.trim();
     const subtitle = document.getElementById("heroSubtitleInput").value.trim();
-    localStorage.setItem("heroTitle",    title);
-    localStorage.setItem("heroSubtitle", subtitle);
     const btn = document.querySelector('[onclick="saveHeroText()"]');
+    
+    btn.textContent = "⏳ Guardando...";
+    await postAction("updateMessage", { title: title, subtitle: subtitle });
+    
     btn.textContent = "✅ Guardado";
     setTimeout(function() { btn.textContent = "💾 Guardar"; }, 2000);
   }
 
-  loadHeroText();
-
-  // ── Add / Edit Modal ────────────────────────────────────────
+  // Add / Edit Modal
   let editingId = null;
 
   function openAddModal() {
@@ -513,38 +494,54 @@
     else { preview.style.display = "none"; }
   }
 
-  function saveItem() {
+  async function saveItem() {
     const brand = document.getElementById("editBrand").value.trim();
     const name  = document.getElementById("editName").value.trim();
     const price = parseFloat(document.getElementById("editPrice").value);
     const img   = document.getElementById("editImg").value.trim();
+    
     if (!name || isNaN(price) || price < 0) {
       alert("Por favor, introduce al menos el nombre y un precio válido.");
       return;
     }
+    
+    const btn = document.querySelector('.btn-edit-save');
+    const origText = btn.textContent;
+    btn.textContent = "⏳ Guardando...";
+    btn.style.pointerEvents = "none";
+
     if (editingId === null) {
-      const newId = Math.max(0, ...items.map(i => i.id)) + 1;
-      items.push({ id: newId, brand: brand, name: name, price: price, emoji: "🎁", img: img || null });
+      const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
+      const newItem = { id: newId, brand: brand, name: name, price: price, emoji: "🎁", img: img || "", gifted: false, giftedBy: "", paymentMethod: "" };
+      items.push(newItem);
+      await postAction("add", newItem);
     } else {
       const idx = items.findIndex(i => i.id === editingId);
-      if (idx !== -1) items[idx] = Object.assign({}, items[idx], { brand: brand, name: name, price: price, img: img || null });
+      if (idx !== -1) {
+        items[idx] = Object.assign({}, items[idx], { brand: brand, name: name, price: price, img: img || "" });
+        await postAction("edit", items[idx]);
+      }
     }
-    saveItems(items);
+    
+    btn.textContent = origText;
+    btn.style.pointerEvents = "auto";
+    
     closeEditModal();
     renderAll();
   }
 
-  function deleteItem() {
+  async function deleteItem() {
     if (editingId === null) return;
     const item = items.find(i => i.id === editingId);
     if (!item || !confirm('¿Eliminar "' + item.name + '"?')) return;
+    
     items = items.filter(i => i.id !== editingId);
-    gifted = gifted.filter(g => g !== editingId);
-    delete giftedBy[editingId];
-    saveItems(items); saveGifted(gifted); saveGiftedBy(giftedBy);
-    closeEditModal();
     renderAll();
+    await postAction("delete", { id: editingId });
+    closeEditModal();
   }
+
+  loadData();
 </script>
 </body>
 </html>
