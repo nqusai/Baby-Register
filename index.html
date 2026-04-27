@@ -882,14 +882,17 @@
     }
   }
 
-  function renderAll() {
+function renderAll() {
     const grid = document.getElementById("itemsGrid");
     grid.innerHTML = "";
     items.forEach(function(item) {
       const isGifted = item.gifted;
       const isSelected = selected.includes(item.id);
       const card = document.createElement("div");
-      card.className = "card" + (isGifted ? " gifted" : "") + (isSelected && !isGifted ? " selected" : "");
+      
+      // Removed "selected" class logic from the main card to keep 
+      // visual feedback focused on the button/selection status.
+      card.className = "card" + (isGifted ? " gifted" : "");
       
       const imgSrc = item.img ? (item.img.startsWith('http') ? item.img : BASE + item.img) : null;
       const imgHtml = imgSrc
@@ -902,15 +905,17 @@
             (isSelected ? '\u2713\u00a0 Seleccionado' : 'Seleccionar') +
           '</button>';
 
+      // REMOVED: onclick and cursor:pointer attributes from card-emoji and card-body
       card.innerHTML =
         '<div class="gifted-banner">Reservado \u2713</div>' +
-        '<div class="card-emoji" ' + (!isGifted ? 'onclick="openModal(' + item.id + ')" style="cursor:pointer;"' : '') + '>' + imgHtml + '</div>' +
-        '<div class="card-body" ' + (!isGifted ? 'onclick="openModal(' + item.id + ')" style="cursor:pointer;"' : '') + '>' +
+        '<div class="card-emoji">' + imgHtml + '</div>' + 
+        '<div class="card-body">' +
           '<div class="card-brand">' + item.brand + '</div>' +
           '<div class="card-name">' + item.name + '</div>' +
           '<div class="card-price">' + fmtEur(item.price) + '</div>' +
         '</div>' +
         '<div class="card-footer">' + footerHtml + '</div>';
+        
       grid.appendChild(card);
     });
     updateGiftBar();
