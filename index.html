@@ -190,11 +190,11 @@
       align-items: center;
       justify-content: center;
       font-size: 2.5rem;
-      /* Slower transitions (1.2s), no opacity fade */
-      transition: top 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53),
-                  left 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  opacity 1.2s ease-in;
+      /* Slower transitions (1.0s), no opacity fade */
+      transition: top 1.0s cubic-bezier(0.55, 0.085, 0.68, 0.53),
+                  left 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  transform 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  opacity 1.0s ease-in;
     }
     .fab-icon { font-size: 1.2rem; }
     .fab-label { font-size: 1rem; font-weight: 700; }
@@ -461,7 +461,7 @@
         Pagar online con tarjeta o Apple Pay
       </a>
       <button class="btn-cash" onclick="onMCashClicked()">
-        💵 &nbsp;Darle el dinero en efectivo a Paula 
+        💵 &nbsp;Dar el dinero en efectivo a Paula 
       </button>
     </div>
 
@@ -522,7 +522,7 @@
         Pagar online con tarjeta
       </a>
       <button class="btn-cash" onclick="onCashClicked()">
-        💵 &nbsp;Darle el dinero en efectivo a Paula 
+        💵 &nbsp;Dar el dinero en efectivo a Paula 
       </button>
     </div>
 
@@ -763,7 +763,7 @@
           
           // Update the cart total and active states ONLY when it lands
           updateGiftBar();
-        }, 1200); // Wait 1200ms to match the new CSS transition length
+        }, 1000); // Wait 1000ms to match the new CSS transition length
         
         // Skip the immediate full render so the cart doesn't update until the timeout
         return; 
@@ -830,8 +830,10 @@
     if (selItems.length === 0) return;
     mCurrentPaymentMethod = 'card';
     const total = selItems.reduce((s, i) => s + i.price, 0);
-    document.getElementById("mItemList").innerHTML =
-      selItems.map(i => '• ' + i.brand + ' – ' + i.name + ' <span style="color:var(--sage);font-weight:700;">' + fmtEur(i.price) + '</span>').join('<br>');
+    const n = selItems.length;
+    
+    document.getElementById("mItemList").innerHTML = ''; // Hidden
+    
     document.getElementById("mTotalPrice").textContent = fmtEur(total);
     document.getElementById("mName").value = "";
     document.getElementById("mStepName").style.display = "block";
