@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔐 Admin – Lista de Bebé de Paula y Nas</title>
+  <style>
+    :root {
+      --sage:    #7a9e87;
+      --sage-lt: #b8d4c0;
+      --cream:   #fdf8f2;
+      --sand:    #f0e6d3;
+      --text:    #3a3530;
+      --muted:   #8a7f76;
+      --card:    #ffffff;
+      --paid-bg: #d4edda;
+      --paid-fg: #2d6a4f;
+      --reset-bg:#fff3cd;
+      --reset-fg:#856404;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+           background: var(--cream); color: var(--text); min-height: 100vh; }
+
+    /* ── LOGIN SCREEN ─────────────────────────────────── */
+    #loginScreen {
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; padding: 24px;
+      background: linear-gradient(135deg, #7a9e87, #5d8570);
+    }
+    .login-box {
+      background: #fff; border-radius: 20px;
+      padding: 40px 32px; max-width: 380px; width: 100%;
+      text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    .login-box .lock { font-size: 3rem; margin-bottom: 12px; }
+    .login-box h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+    .login-box p  { font-size: .85rem; color: var(--muted); margin-bottom: 24px; }
+    .login-box input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid #e0e0e0;
+      border-radius: 10px; font-size: 1rem; outline: none;
+      margin-bottom: 14px; letter-spacing: .15em; text-align: center;
+    }
+    .login-box input:focus { border-color: var(--sage); }
+    .btn-login {
+      width: 100%; padding: 13px; background: var(--sage); color: #fff;
+      border: none; border-radius: 10px; font-size: 1rem;
+      font-weight: 700; cursor: pointer; transition: background .2s;
+    }
+    .btn-login:hover { background: #5d8570; }
+    .login-error {
+      color: #c62828; font-size: .82rem; margin-top: 10px; display: none;
+    }
+
+    /* ── ADMIN CONTENT ────────────────────────────────── */
+    #adminContent { display: block; }
+
+    .admin-hero {
+      background: linear-gradient(135deg, #3a3530, #5d4e47);
+      color: #fff; padding: 28px 24px; text-align: center;
+    }
+    .admin-hero h1 { font-size: 1.4rem; font-weight: 700; }
+    .admin-hero p  { font-size: .85rem; opacity: .7; margin-top: 6px; }
+    .admin-badge {
+      display: inline-block; background: #e53935; color: #fff;
+      font-size: .65rem; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; padding: 3px 10px;
+      border-radius: 99px; margin-bottom: 10px;
+    }
+
+    /* ── TOOLBAR ──────────────────────────────────────── */
+    .toolbar {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      padding: 16px 20px; background: var(--sand);
+      border-bottom: 1px solid #e5d9c8; align-items: center;
+    }
+    .toolbar span { font-size: .85rem; color: var(--muted); margin-right: auto; font-weight: 600; }
+    .btn-tool {
+      padding: 8px 18px; border: none; border-radius: 8px;
+      font-size: .82rem; font-weight: 600; cursor: pointer; transition: opacity .2s;
+    }
+    .btn-tool:hover { opacity: .85; }
+    .btn-mark-all  { background: var(--paid-fg);  color: #fff; }
+    .btn-reset-all { background: var(--reset-fg); color: #fff; }
+    .btn-add-item  { background: #3a3530; color: #fff; }
+
+    /* ── EDIT MODAL ───────────────────────────────────────── */
+    .edit-modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .edit-modal-overlay.open { display: flex; }
+    .edit-modal {
+      background: #fff; border-radius: 20px;
+      padding: 28px 24px; max-width: 460px; width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .edit-modal h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 18px; }
+    .edit-field { margin-bottom: 14px; }
+    .edit-field label {
+      display: block; font-size: .8rem; font-weight: 700;
+      color: var(--muted); text-transform: uppercase;
+      letter-spacing: .06em; margin-bottom: 5px;
+    }
+    .edit-field input {
+      width: 100%; padding: 10px 12px;
+      border: 1.5px solid #e0e0e0; border-radius: 10px;
+      font-size: .9rem; outline: none; box-sizing: border-box;
+    }
+    .edit-field input:focus { border-color: var(--sage); }
+    .edit-img-preview {
+      width: 100%; height: 140px; object-fit: contain;
+      border: 1px solid #eee; border-radius: 10px;
+      margin-top: 8px; display: none; background: #fafafa;
+    }
+    .edit-actions { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+    .btn-edit-save {
+      flex: 1; padding: 12px; background: var(--sage); color: #fff;
+      border: none; border-radius: 10px; font-weight: 700;
+      font-size: .9rem; cursor: pointer; transition: background .2s;
+    }
+    .btn-edit-save:hover { background: #5d8570; }
+    .btn-edit-delete {
+      padding: 12px 16px; background: #fee2e2; color: #b91c1c;
+      border: none; border-radius: 10px; font-weight: 700;
+      font-size: .9rem; cursor: pointer; transition: background .2s;
+    }
+    .btn-edit-delete:hover { background: #fca5a5; }
+    .btn-edit-cancel {
+      padding: 12px 16px; background: #f3f4f6; color: var(--text);
+      border: none; border-radius: 10px; font-weight: 600;
+      font-size: .9rem; cursor: pointer;
+    }
+
+    /* ── PROGRESS ─────────────────────────────────────── */
+    .progress-wrap {
+      background: var(--sand); border-bottom: 1px solid #e5d9c8;
+      padding: 16px 24px; text-align: center;
+    }
+    .progress-bar-track {
+      max-width: 600px; margin: 0 auto 8px;
+      height: 10px; background: #ddd; border-radius: 99px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; width: 0%; background: linear-gradient(90deg, var(--sage), var(--sage-lt));
+      border-radius: 99px; transition: width .4s ease;
+    }
+    .progress-text { font-size: .85rem; color: var(--text); font-weight: 600; }
+
+    /* ── GRID ─────────────────────────────────────────── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px; max-width: 1100px; margin: 28px auto; padding: 0 20px;
+    }
+
+    /* ── CARD ─────────────────────────────────────────── */
+    .card {
+      background: var(--card); border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      overflow: hidden; display: flex; flex-direction: column;
+      border: 2px solid transparent; transition: border-color .2s;
+    }
+    .card.gifted { border-color: var(--paid-fg); }
+
+    .card-img {
+      height: 200px; background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      border-bottom: 1px solid #f0ece6; padding: 16px;
+      position: relative;
+    }
+    .card-img img {
+      max-width: 100%; max-height: 100%;
+      width: auto; height: auto; object-fit: contain;
+    }
+    .card-img .emoji-fallback { font-size: 3rem; }
+
+    .gifted-badge {
+      display: none; position: absolute; top: 10px; left: 10px;
+      background: var(--paid-fg); color: #fff; font-size: .68rem;
+      font-weight: 800; padding: 4px 10px; border-radius: 99px;
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .card.gifted .gifted-badge { display: block; }
+
+    .card-body { padding: 14px 16px; flex: 1; }
+    .card-brand { font-size: .68rem; font-weight: 700; text-transform: uppercase;
+                  letter-spacing: .08em; color: var(--sage); }
+    .card-name  { font-size: .9rem; font-weight: 600; color: var(--text);
+                  line-height: 1.35; margin-top: 3px; }
+    .card-price { font-size: 1.2rem; font-weight: 800; color: var(--sage); margin-top: 4px; }
+
+    /* ── ADMIN CONTROLS ───────────────────────────────── */
+    .card-admin {
+      padding: 12px 14px; display: flex; gap: 8px;
+      border-top: 1px solid #f0ece6;
+    }
+    .btn-gift {
+      flex: 1; padding: 10px; border: none; border-radius: 8px;
+      font-size: .82rem; font-weight: 700; cursor: pointer;
+      background: var(--paid-fg); color: #fff; transition: opacity .2s;
+    }
+    .btn-gift:hover { opacity: .85; }
+    .btn-reset {
+      flex: 1; padding: 10px; border: none; border-radius: 8px;
+      font-size: .82rem; font-weight: 700; cursor: pointer;
+      background: var(--reset-bg); color: var(--reset-fg);
+      border: 1px solid #f0c040; transition: opacity .2s;
+    }
+    .btn-reset:hover { opacity: .85; }
+    .card.gifted .btn-gift  { opacity: .35; pointer-events: none; }
+    .card:not(.gifted) .btn-reset { opacity: .35; pointer-events: none; }
+
+    footer {
+      text-align: center; padding: 20px;
+      font-size: .75rem; color: var(--muted);
+      border-top: 1px solid #e5ddd0;
+    }
+
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── ADMIN CONTENT ──────────────────────────────────────── -->
+<div id="adminContent">
+
+  <div class="admin-hero">
+    <div class="admin-badge">Admin</div>
+    <h1>🛠️ Panel de Administrador</h1>
+    <p>Lista de Bebé de Paula y Nas · Gestión de artículos</p>
+  </div>
+
+  <div class="toolbar">
+    <span id="toolbarStatus">Cargando…</span>
+    <button class="btn-tool btn-add-item" onclick="openAddModal()">➕ Añadir artículo</button>
+    <button class="btn-tool btn-mark-all" onclick="markAll()">✅ Marcar todos como regalados</button>
+    <button class="btn-tool btn-reset-all" onclick="resetAll()">🔄 Resetear todos</button>
+  </div>
+
+  <!-- ── HERO TEXT EDITOR ──────────────────────────────────── -->
+  <div style="background:#fff;border-bottom:1px solid #e5d9c8;padding:16px 24px;">
+    <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;">✏️ Texto de la página pública</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="flex:1;min-width:200px;">
+        <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Título</label>
+        <input type="text" id="heroTitleInput"
+          style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:.9rem;outline:none;box-sizing:border-box;"
+          onfocus="this.style.borderColor='var(--sage)'" onblur="this.style.borderColor='#e0e0e0'" />
+      </div>
+      <div style="flex:2;min-width:200px;">
+        <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Subtítulo</label>
+        <input type="text" id="heroSubtitleInput"
+          style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:.9rem;outline:none;box-sizing:border-box;"
+          onfocus="this.style.borderColor='var(--sage)'" onblur="this.style.borderColor='#e0e0e0'" />
+      </div>
+      <button onclick="saveHeroText()"
+        style="padding:9px 20px;background:var(--sage);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap;">
+        💾 Guardar
+      </button>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText"></div>
+  </div>
+
+  <div class="grid" id="itemsGrid"></div>
+
+  <footer>
+    Panel de administrador · Lista de Bebé de Paula y Nas 🌿
+    &nbsp;·&nbsp;
+    <a href="index.html" style="color:var(--sage);text-decoration:none;">
+      Ver lista pública →
+    </a>
+  </footer>
+
+</div>
+
+<!-- ── ADD / EDIT MODAL ───────────────────────────────────── -->
+<div class="edit-modal-overlay" id="editModal">
+  <div class="edit-modal">
+    <h2 id="editModalTitle">➕ Añadir artículo</h2>
+
+    <div class="edit-field">
+      <label>Marca</label>
+      <input type="text" id="editBrand" placeholder="Ej: Zara Home" />
+    </div>
+    <div class="edit-field">
+      <label>Nombre *</label>
+      <input type="text" id="editName" placeholder="Ej: Manta Bebé Algodón" />
+    </div>
+    <div class="edit-field">
+      <label>Precio (€) *</label>
+      <input type="number" id="editPrice" placeholder="19.99" min="0" step="0.01" />
+    </div>
+    <div class="edit-field">
+      <label>URL de imagen</label>
+      <input type="text" id="editImg" placeholder="https://..." oninput="previewImg()" />
+      <img id="editImgPreview" class="edit-img-preview" alt="Vista previa" />
+    </div>
+
+    <div class="edit-actions">
+      <button class="btn-edit-save" onclick="saveItem()">💾 Guardar</button>
+      <button class="btn-edit-delete" id="editDeleteBtn" onclick="deleteItem()" style="display:none;">🗑️ Eliminar</button>
+      <button class="btn-edit-cancel" onclick="closeEditModal()">✕ Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BASE = "https://www.bebecenter.es/";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6If8CnK6bQx2iZhZ3q91z4xJpUmTF-oiaWF5ZmS3fhueVKabG67L735x6mPMXqWhZ/exec";
+
+  let items = [];
+
+  function fmtEur(n) { return "€" + Number(n).toFixed(2).replace(".", ","); }
+
+  async function loadData() {
+    const grid = document.getElementById("itemsGrid");
+    grid.innerHTML = "<p style='text-align:center;width:100%;color:var(--muted);'>Cargando datos desde Google Sheets...</p>";
+    try {
+      const res = await fetch(SCRIPT_URL);
+      const json = await res.json();
+      if (json.status === "success") {
+        document.getElementById("heroTitleInput").value = json.data.title || "";
+        document.getElementById("heroSubtitleInput").value = json.data.subtitle || "";
+        items = json.data.items.map(i => Object.assign({}, i, { emoji: "🎁", price: Number(i.price) }));
+        renderAll();
+      }
+    } catch(e) {
+      console.error(e);
+      grid.innerHTML = "<p style='text-align:center;width:100%;color:red;'>Error al cargar los datos.</p>";
+    }
+  }
+
+  async function postAction(action, payload) {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: action, payload: payload })
+      });
+    } catch (e) {
+      console.error(e);
+      alert("Hubo un error al guardar en Google Sheets.");
+    }
+  }
+
+  async function markGifted(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    item.gifted = true;
+    item.giftedBy = "Admin";
+    renderAll();
+    await postAction("reserve", { ids: [id], giftedBy: "Admin", paymentMethod: "cash" });
+  }
+
+  async function resetItem(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    item.gifted = false;
+    item.giftedBy = "";
+    item.paymentMethod = "";
+    renderAll();
+    await postAction("reset", { ids: [id] });
+  }
+
+  async function markAll() {
+    if (!confirm("¿Seguro que quieres marcar todos como regalados?")) return;
+    items.forEach(i => { i.gifted = true; i.giftedBy = "Admin"; i.paymentMethod = "cash"; });
+    renderAll();
+    await postAction("markAll", {});
+  }
+
+  async function resetAll() {
+    if (!confirm("¿Seguro que quieres resetear todos los artículos?")) return;
+    items.forEach(i => { i.gifted = false; i.giftedBy = ""; i.paymentMethod = ""; });
+    renderAll();
+    await postAction("resetAll", {});
+  }
+
+  function updateProgress() {
+    const total = items.reduce((s, i) => s + i.price, 0);
+    const giftedItems = items.filter(i => i.gifted);
+    const giftedTotal = giftedItems.reduce((s, i) => s + i.price, 0);
+    const pct = total > 0 ? (giftedTotal / total * 100).toFixed(0) : 0;
+    
+    document.getElementById("progressFill").style.width = pct + "%";
+    document.getElementById("progressText").textContent =
+      giftedItems.length + " de " + items.length + " artículos regalados · " +
+      fmtEur(giftedTotal) + " de " + fmtEur(total);
+    document.getElementById("toolbarStatus").textContent =
+      giftedItems.length + " regalados · " + (items.length - giftedItems.length) + " disponibles";
+  }
+
+  function renderAll() {
+    const grid = document.getElementById("itemsGrid");
+    grid.innerHTML = "";
+    items.forEach(function(item) {
+      const isGifted = item.gifted;
+      const imgSrc = item.img ? (item.img.startsWith('http') ? item.img : BASE + item.img) : null;
+      const imgHtml = imgSrc
+        ? '<img src="' + imgSrc + '" alt="' + item.name + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'"><span class="emoji-fallback" style="display:none">' + item.emoji + '</span>'
+        : '<span class="emoji-fallback">' + item.emoji + '</span>';
+
+      const card = document.createElement("div");
+      card.className = "card" + (isGifted ? " gifted" : "");
+      card.innerHTML =
+        '<div class="card-img">' +
+          '<div class="gifted-badge">✓ Regalado</div>' +
+          imgHtml +
+        '</div>' +
+        '<div class="card-body">' +
+          '<div class="card-brand">' + item.brand + '</div>' +
+          '<div class="card-name">'  + item.name  + '</div>' +
+          '<div class="card-price">' + fmtEur(item.price) + '</div>' +
+          (isGifted && item.giftedBy
+            ? '<div style="margin-top:8px;padding:7px 10px;background:#d4edda;border-radius:8px;font-size:.8rem;color:#2d6a4f;font-weight:600;">🎁 ' + item.giftedBy + (item.paymentMethod ? ' (' + item.paymentMethod + ')' : '') + '</div>'
+            : '') +
+        '</div>' +
+        '<div class="card-admin">' +
+          '<button class="btn-gift"  onclick="markGifted(' + item.id + ')">✅ Marcar</button>' +
+          '<button class="btn-reset" onclick="resetItem('  + item.id + ')">🔄 Resetear</button>' +
+          '<button class="btn-tool" style="width:100%;margin-top:6px;background:#f3f4f6;color:#3a3530;" onclick="openEditModal(' + item.id + ')">✏️ Editar</button>' +
+        '</div>';
+      grid.appendChild(card);
+    });
+    updateProgress();
+  }
+
+  async function saveHeroText() {
+    const title = document.getElementById("heroTitleInput").value.trim();
+    const subtitle = document.getElementById("heroSubtitleInput").value.trim();
+    const btn = document.querySelector('[onclick="saveHeroText()"]');
+    
+    btn.textContent = "⏳ Guardando...";
+    await postAction("updateMessage", { title: title, subtitle: subtitle });
+    
+    btn.textContent = "✅ Guardado";
+    setTimeout(function() { btn.textContent = "💾 Guardar"; }, 2000);
+  }
+
+  // Add / Edit Modal
+  let editingId = null;
+
+  function openAddModal() {
+    editingId = null;
+    document.getElementById("editModalTitle").textContent = "➕ Añadir artículo";
+    document.getElementById("editBrand").value = "";
+    document.getElementById("editName").value  = "";
+    document.getElementById("editPrice").value = "";
+    document.getElementById("editImg").value   = "";
+    document.getElementById("editImgPreview").style.display = "none";
+    document.getElementById("editDeleteBtn").style.display  = "none";
+    document.getElementById("editModal").classList.add("open");
+    setTimeout(function() { document.getElementById("editBrand").focus(); }, 100);
+  }
+
+  function openEditModal(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    editingId = id;
+    document.getElementById("editModalTitle").textContent = "✏️ Editar artículo";
+    document.getElementById("editBrand").value = item.brand || "";
+    document.getElementById("editName").value  = item.name  || "";
+    document.getElementById("editPrice").value = item.price || "";
+    document.getElementById("editImg").value   = item.img   || "";
+    document.getElementById("editDeleteBtn").style.display = "inline-block";
+    previewImg();
+    document.getElementById("editModal").classList.add("open");
+  }
+
+  function closeEditModal() {
+    document.getElementById("editModal").classList.remove("open");
+    editingId = null;
+  }
+
+  document.getElementById("editModal").addEventListener("click", function(e) {
+    if (e.target === this) closeEditModal();
+  });
+
+  function previewImg() {
+    const url = document.getElementById("editImg").value.trim();
+    const preview = document.getElementById("editImgPreview");
+    if (url) { preview.src = url; preview.style.display = "block"; }
+    else { preview.style.display = "none"; }
+  }
+
+  async function saveItem() {
+    const brand = document.getElementById("editBrand").value.trim();
+    const name  = document.getElementById("editName").value.trim();
+    const price = parseFloat(document.getElementById("editPrice").value);
+    const img   = document.getElementById("editImg").value.trim();
+    
+    if (!name || isNaN(price) || price < 0) {
+      alert("Por favor, introduce al menos el nombre y un precio válido.");
+      return;
+    }
+    
+    const btn = document.querySelector('.btn-edit-save');
+    const origText = btn.textContent;
+    btn.textContent = "⏳ Guardando...";
+    btn.style.pointerEvents = "none";
+
+    if (editingId === null) {
+      const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
+      const newItem = { id: newId, brand: brand, name: name, price: price, emoji: "🎁", img: img || "", gifted: false, giftedBy: "", paymentMethod: "" };
+      items.push(newItem);
+      await postAction("add", newItem);
+    } else {
+      const idx = items.findIndex(i => i.id === editingId);
+      if (idx !== -1) {
+        items[idx] = Object.assign({}, items[idx], { brand: brand, name: name, price: price, img: img || "" });
+        await postAction("edit", items[idx]);
+      }
+    }
+    
+    btn.textContent = origText;
+    btn.style.pointerEvents = "auto";
+    
+    closeEditModal();
+    renderAll();
+  }
+
+  async function deleteItem() {
+    if (editingId === null) return;
+    const item = items.find(i => i.id === editingId);
+    if (!item || !confirm('¿Eliminar "' + item.name + '"?')) return;
+    
+    items = items.filter(i => i.id !== editingId);
+    renderAll();
+    await postAction("delete", { id: editingId });
+    closeEditModal();
+  }
+
+  loadData();
+</script>
+</body>
+</html>
