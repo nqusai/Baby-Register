@@ -192,7 +192,79 @@
                   line-height: 1.35; margin-top: 3px; }
     .card-price { font-size: 1.2rem; font-weight: 800; color: var(--sage); margin-top: 4px; }
 
-    /* ── ADMIN CONTROLS ───────────────────────────────── */
+    /* ── FULL SCREEN DUCK LOADING ANIMATION ───────────────────────────── */
+    #fullScreenLoader {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: var(--cream);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+    }
+    
+    .pond {
+      position: relative;
+      width: 100%;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .duck-parade {
+      display: flex;
+      flex-direction: row-reverse; 
+      align-items: flex-end;
+      gap: 12px;
+      /* The ducks swim slowly from right to left */
+      animation: swimAcross 8s linear infinite;
+    }
+    
+    .duck-parade span {
+      display: inline-block;
+      /* Flip the ducks to face left instead of right */
+      transform: scaleX(-1);
+      /* The ducks bob up and down as they swim */
+      animation: duckBob 1s ease-in-out infinite alternate;
+    }
+    
+    .duck-parade .mama { 
+      font-size: 6rem; /* Huge mama duck */
+    }
+    
+    .duck-parade .baby1 { font-size: 2.8rem; animation-delay: 0.2s; margin-bottom: 5px; }
+    .duck-parade .baby2 { font-size: 2.5rem; animation-delay: 0.4s; margin-bottom: 5px; }
+    .duck-parade .baby3 { font-size: 2.2rem; animation-delay: 0.6s; margin-bottom: 5px; }
+    
+    @keyframes swimAcross {
+      0% { transform: translateX(40vw); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateX(00vw); opacity: 100; }
+    }
+    
+    @keyframes duckBob {
+      0% { transform: translateY(0) rotate(10deg) scaleX(-1); }
+      100% { transform: translateY(-20px) rotate(-4deg) scaleX(-1); }
+    }
+    
+    .loading-text {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--sage);
+      margin-top: 20px;
+      letter-spacing: 0.05em;
+      animation: pulseText 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes pulseText {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
     .card-admin {
       padding: 12px 14px; display: flex; gap: 8px;
       border-top: 1px solid #f0ece6;
@@ -225,6 +297,19 @@
   </style>
 </head>
 <body>
+
+<!-- ── FULL SCREEN LOADER ────────────────────────────────── -->
+<div id="fullScreenLoader">
+  <div class="pond">
+    <div class="duck-parade">
+      <span class="mama">🦆</span>
+      <span class="baby1">🐥</span>
+      <span class="baby2">🐥</span>
+      <span class="baby3">🐥</span>
+    </div>
+  </div>
+  <div class="loading-text">Cargando datos...</div>
+</div>
 
 <!-- ── ADMIN CONTENT ──────────────────────────────────────── -->
 <div id="adminContent">
@@ -315,42 +400,98 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 <script>
   const BASE = "https://www.bebecenter.es/";
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6If8CnK6bQx2iZhZ3q91z4xJpUmTF-oiaWF5ZmS3fhueVKabG67L735x6mPMXqWhZ/exec";
+
+  // Initialize Firebase (Replace with your actual config from Firebase Console!)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBR__QwvLU-j6_ZOMVXbkZR4jRhldTd-Sg",
+    authDomain: "babylist-84647.firebaseapp.com",
+    projectId: "babylist-84647",
+    storageBucket: "babylist-84647.firebasestorage.app",
+    messagingSenderId: "612990515655",
+    appId: "1:612990515655:web:9bdf275397c73f664e81e2",
+    measurementId: "G-6L8LZVZ1C1"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
   let items = [];
 
   function fmtEur(n) { return "€" + Number(n).toFixed(2).replace(".", ","); }
 
-  async function loadData() {
+  function loadData() {
     const grid = document.getElementById("itemsGrid");
-    grid.innerHTML = "<p style='text-align:center;width:100%;color:var(--muted);'>Cargando datos desde Google Sheets...</p>";
-    try {
-      const res = await fetch(SCRIPT_URL);
-      const json = await res.json();
-      if (json.status === "success") {
-        document.getElementById("heroTitleInput").value = json.data.title || "";
-        document.getElementById("heroSubtitleInput").value = json.data.subtitle || "";
-        items = json.data.items.map(i => Object.assign({}, i, { emoji: "🎁", price: Number(i.price) }));
-        renderAll();
+
+    // Listen to config
+    db.collection("config").doc("hero").onSnapshot((docSnap) => {
+      if (docSnap.exists) {
+        const data = docSnap.data();
+        document.getElementById("heroTitleInput").value = data.title || "";
+        document.getElementById("heroSubtitleInput").value = data.subtitle || "";
       }
-    } catch(e) {
-      console.error(e);
-      grid.innerHTML = "<p style='text-align:center;width:100%;color:red;'>Error al cargar los datos.</p>";
-    }
+    });
+
+    // Listen to items
+    db.collection("items").onSnapshot((snapshot) => {
+      items = snapshot.docs.map(d => Object.assign({ _docId: d.id }, d.data(), { emoji: "🎁", price: Number(d.data().price) }));
+      items.sort((a, b) => a.id - b.id);
+      renderAll();
+      
+      // Hide loader and show content after a guaranteed minimum of 2 seconds
+      setTimeout(() => {
+        const loader = document.getElementById("fullScreenLoader");
+        if (loader.style.opacity !== "0") {
+          loader.style.opacity = "0";
+          setTimeout(() => { loader.style.display = "none"; }, 600);
+        }
+      }, 2000);
+    }, (error) => {
+      console.error(error);
+      grid.innerHTML = "<p style='text-align:center;width:100%;color:red;margin-top:20px;'>Error al cargar los datos.</p>";
+    });
   }
 
   async function postAction(action, payload) {
     try {
-      await fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: action, payload: payload })
-      });
+      const batch = db.batch();
+      if (action === "updateMessage") {
+        await db.collection("config").doc("hero").set({ title: payload.title, subtitle: payload.subtitle }, { merge: true });
+      } else if (action === "reserve") {
+        payload.ids.forEach(id => {
+          const item = items.find(i => i.id === id);
+          if (item && item._docId) batch.update(db.collection("items").doc(item._docId), { gifted: true, giftedBy: payload.giftedBy, paymentMethod: payload.paymentMethod });
+        });
+        await batch.commit();
+      } else if (action === "reset") {
+        payload.ids.forEach(id => {
+          const item = items.find(i => i.id === id);
+          if (item && item._docId) batch.update(db.collection("items").doc(item._docId), { gifted: false, giftedBy: "", paymentMethod: "" });
+        });
+        await batch.commit();
+      } else if (action === "markAll") {
+        items.forEach(i => {
+          if (i._docId) batch.update(db.collection("items").doc(i._docId), { gifted: true, giftedBy: "Admin", paymentMethod: "cash" });
+        });
+        await batch.commit();
+      } else if (action === "resetAll") {
+        items.forEach(i => {
+          if (i._docId) batch.update(db.collection("items").doc(i._docId), { gifted: false, giftedBy: "", paymentMethod: "" });
+        });
+        await batch.commit();
+      } else if (action === "add") {
+        await db.collection("items").doc(payload.id.toString()).set(payload);
+      } else if (action === "edit") {
+        if (payload._docId) await db.collection("items").doc(payload._docId).update({ brand: payload.brand, name: payload.name, price: payload.price, img: payload.img });
+      } else if (action === "delete") {
+        const item = items.find(i => i.id === payload.id);
+        if (item && item._docId) await db.collection("items").doc(item._docId).delete();
+      }
     } catch (e) {
       console.error(e);
-      alert("Hubo un error al guardar en Google Sheets.");
+      alert("Hubo un error al guardar en Firebase.");
     }
   }
 

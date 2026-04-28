@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Migrating Data to Firebase</title>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+</head>
+<body style="font-family: sans-serif; padding: 40px; text-align: center;">
+  <h2>🚀 Moving your items from Google Sheets to Firebase...</h2>
+  <div id="status" style="margin-top: 20px; font-weight: bold; color: #444;">Please wait...</div>
+  <pre id="log" style="text-align: left; background: #f4f4f4; padding: 20px; border-radius: 8px; margin-top: 20px; max-height: 400px; overflow-y: auto;"></pre>
+
+  <script>
+    // 1. Initialize Firebase with YOUR keys
+    const firebaseConfig = {
+      apiKey: "AIzaSyBR__QwvLU-j6_ZOMVXbkZR4jRhldTd-Sg",
+      authDomain: "babylist-84647.firebaseapp.com",
+      projectId: "babylist-84647",
+      storageBucket: "babylist-84647.firebasestorage.app",
+      messagingSenderId: "612990515655",
+      appId: "1:612990515655:web:9bdf275397c73f664e81e2",
+      measurementId: "G-6L8LZVZ1C1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6If8CnK6bQx2iZhZ3q91z4xJpUmTF-oiaWF5ZmS3fhueVKabG67L735x6mPMXqWhZ/exec";
+    
+    function log(msg) {
+      const p = document.createElement("div");
+      p.textContent = msg;
+      document.getElementById("log").appendChild(p);
+      console.log(msg);
+    }
+
+    async function migrateData() {
+      const statusEl = document.getElementById("status");
+      try {
+        log("1. Fetching data from Google Sheets...");
+        const res = await fetch(SCRIPT_URL);
+        const json = await res.json();
+        
+        if (json.status !== "success") {
+          throw new Error("Failed to load from Google Sheets.");
+        }
+
+        const items = json.data.items;
+        const title = json.data.title || "Lista de Bebé de Paula y Nas";
+        const subtitle = json.data.subtitle || "¡Bienvenidos!";
+
+        log(`Found ${items.length} items and Hero text. Proceeding to save to Firebase...`);
+
+        // Create a batch
+        const batch = db.batch();
+
+        // 2. Add Hero Text
+        const heroRef = db.collection("config").doc("hero");
+        batch.set(heroRef, { title, subtitle });
+        log("Prepared Hero text for saving.");
+
+        // 3. Add Items
+        items.forEach((item, index) => {
+          // Use the sheet ID as the document ID so they match
+          const docId = item.id.toString(); 
+          const itemRef = db.collection("items").doc(docId);
+          
+          batch.set(itemRef, {
+            id: item.id,
+            name: item.name || "",
+            brand: item.brand || "",
+            price: Number(item.price) || 0,
+            img: item.img || "",
+            emoji: "🎁",
+            gifted: item.gifted === true || item.gifted === "true",
+            giftedBy: item.giftedBy || "",
+            paymentMethod: item.paymentMethod || ""
+          });
+          log(`Prepared item #${index + 1}: ${item.name}`);
+        });
+
+        // 4. Commit the batch
+        log("Committing all changes to Firebase...");
+        await batch.commit();
+
+        statusEl.innerHTML = "✅ Migration Complete! You can close this file and open index.html.";
+        statusEl.style.color = "green";
+        log("Successfully migrated all data! 🎉");
+
+      } catch (e) {
+        statusEl.innerHTML = "❌ Error during migration.";
+        statusEl.style.color = "red";
+        log("Error: " + e.message);
+      }
+    }
+
+    migrateData();
+  </script>
+</body>
+</html>

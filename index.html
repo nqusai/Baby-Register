@@ -206,7 +206,6 @@
       flex-direction: row-reverse; 
       align-items: flex-end;
       gap: 1px;
-      /* The ducks swim slowly from right to left */
       animation: swimAcross 8s linear infinite;
     }
     
@@ -627,10 +626,24 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 <script>
   const REVOLUT_BASE = "https://revolut.me/nqusai?currency=EUR&amount=";
   const BASE = "https://www.bebecenter.es/";
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6If8CnK6bQx2iZhZ3q91z4xJpUmTF-oiaWF5ZmS3fhueVKabG67L735x6mPMXqWhZ/exec";
+  
+  // Initialize Firebase (Replace with your actual config from Firebase Console!)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBR__QwvLU-j6_ZOMVXbkZR4jRhldTd-Sg",
+    authDomain: "babylist-84647.firebaseapp.com",
+    projectId: "babylist-84647",
+    storageBucket: "babylist-84647.firebasestorage.app",
+    messagingSenderId: "612990515655",
+    appId: "1:612990515655:web:9bdf275397c73f664e81e2",
+    measurementId: "G-6L8LZVZ1C1"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
   let items = [];
   let currentItemId = null;
@@ -640,49 +653,53 @@
 
   function fmtEur(n) { return "€" + Number(n).toFixed(2).replace(".", ","); }
 
-  async function loadData() {
+  function loadData() {
     const grid = document.getElementById("itemsGrid");
-    grid.innerHTML = "";
-    try {
-      const res = await fetch(SCRIPT_URL);
-      const json = await res.json();
-      if (json.status === "success") {
-        document.getElementById("heroTitle").textContent = json.data.title || "Lista de Bebé";
-        document.getElementById("heroSubtitle").textContent = json.data.subtitle || "¡Bienvenidos!";
-        items = json.data.items.map(i => Object.assign({}, i, { emoji: "🎁", price: Number(i.price) }));
-        renderAll();
+
+    // Real-time listener for Hero text config
+    db.collection("config").doc("hero").onSnapshot((docSnap) => {
+      if (docSnap.exists) {
+        const data = docSnap.data();
+        document.getElementById("heroTitle").textContent = data.title || "Lista de Bebé";
+        document.getElementById("heroSubtitle").textContent = data.subtitle || "¡Bienvenidos!";
       }
-    } catch(e) {
-      console.error(e);
+    });
+
+    // Real-time listener for Items
+    db.collection("items").onSnapshot((snapshot) => {
+      items = snapshot.docs.map(d => Object.assign({ _docId: d.id }, d.data(), { emoji: "🎁", price: Number(d.data().price) }));
+      items.sort((a, b) => a.id - b.id);
+      renderAll();
+
+      // Hide loader and show content after a guaranteed minimum of 2 seconds
+      setTimeout(() => {
+        const loader = document.getElementById("fullScreenLoader");
+        if (loader.style.opacity !== "0") {
+          loader.style.opacity = "0";
+          setTimeout(() => { loader.style.display = "none"; }, 600);
+        }
+      }, 2000);
+    }, (error) => {
+      console.error("Firebase error:", error);
       grid.innerHTML = "<p style='text-align:center;width:100%;color:red;margin-top:20px;'>Error al cargar los datos.</p>";
-    } finally {
-      // Hide loader and show content
-      const loader = document.getElementById("fullScreenLoader");
-      loader.style.opacity = "0";
-      setTimeout(() => { loader.style.display = "none"; }, 600);
-    }
+    });
   }
 
   async function sendReservation(ids, name, method) {
     try {
-      await fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "reserve",
-          payload: { ids: ids, giftedBy: name, paymentMethod: method }
-        })
-      });
-      // Locally update
+      const batch = db.batch();
       ids.forEach(id => {
         const item = items.find(i => i.id === id);
-        if(item) {
-          item.gifted = true;
-          item.giftedBy = name;
-          item.paymentMethod = method;
+        if(item && item._docId) {
+          batch.update(db.collection("items").doc(item._docId), {
+            gifted: true,
+            giftedBy: name,
+            paymentMethod: method
+          });
         }
       });
-      renderAll();
+      await batch.commit();
+      // No manual local update needed, onSnapshot will update UI instantly!
     } catch(e) {
       console.error(e);
       alert("Hubo un error de conexión al guardar.");
