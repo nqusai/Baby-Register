@@ -540,7 +540,7 @@
       <p style="font-size:.9rem;color:var(--text);margin-bottom:16px;">
         Hola <strong id="mDisplayName"></strong>, elige cómo quieres pagar:
       </p>
-      <a class="btn-open" id="mPayBtn" target="_blank" rel="noopener" onclick="onMRevolutClicked()">
+      <a class="btn-open" id="mPayBtn" target="_blank" rel="noopener" onclick="onMRevolutClicked(event)">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
         </svg>
@@ -601,7 +601,7 @@
       <p style="font-size:.9rem;color:var(--text);margin-bottom:16px;">
         Hola <strong id="displayName"></strong>, elige cómo quieres pagar:
       </p>
-      <a class="btn-open" id="modalOpenBtn" target="_blank" rel="noopener" onclick="onRevolutClicked()">
+      <a class="btn-open" id="modalOpenBtn" target="_blank" rel="noopener" onclick="onRevolutClicked(event)">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
         </svg>
@@ -750,12 +750,27 @@
     setTimeout(function() { document.getElementById("giftName").focus(); }, 100);
   }
 
-  function onRevolutClicked() {
-    currentPaymentMethod = 'card';
-    document.getElementById("stepPay").style.display = "none";
-    document.getElementById("confirmMsg").textContent = "🔔 ¿Has completado el pago con tarjeta?";
-    document.getElementById("confirmBtn").textContent = "✅  Sí";
-    document.getElementById("confirmSection").style.display = "block";
+  async function onRevolutClicked(event) {
+    event.preventDefault();
+    const url  = document.getElementById("modalOpenBtn").href;
+    const name = document.getElementById("giftName").value.trim();
+    const id   = currentItemId;
+
+    // Show loading state on the button
+    const btn = document.getElementById("modalOpenBtn");
+    btn.innerHTML = "⏳ Reservando...";
+    btn.style.pointerEvents = "none";
+
+    // 1. Mark as reserved in Firebase FIRST
+    await sendReservation([id], name, "card");
+
+    // 2. Open Revolut in a new tab
+    window.open(url, "_blank", "noopener,noreferrer");
+
+    // 3. Close modal and tidy up
+    closeModal();
+    selected = selected.filter(sId => sId !== id);
+    renderAll();
   }
 
   function onCashClicked() {
@@ -989,12 +1004,28 @@ function renderAll() {
     document.getElementById("mStepPay").style.display = "block";
   }
 
-  function onMRevolutClicked() {
-    mCurrentPaymentMethod = 'card';
-    document.getElementById("mStepPay").style.display = "none";
-    document.getElementById("mConfirmMsg").textContent = "🔔 ¿Has completado el pago con tarjeta?";
-    document.getElementById("mConfirmBtn").textContent = "✅  Sí";
-    document.getElementById("mConfirmSection").style.display = "block";
+  async function onMRevolutClicked(event) {
+    event.preventDefault();
+    const url  = document.getElementById("mPayBtn").href;
+    const name = document.getElementById("mName").value.trim();
+    const selItems = items.filter(i => selected.includes(i.id) && !i.gifted);
+    const ids  = selItems.map(i => i.id);
+
+    // Show loading state on the button
+    const btn = document.getElementById("mPayBtn");
+    btn.innerHTML = "⏳ Reservando...";
+    btn.style.pointerEvents = "none";
+
+    // 1. Mark all selected items as reserved in Firebase FIRST
+    await sendReservation(ids, name, "card");
+
+    // 2. Open Revolut in a new tab
+    window.open(url, "_blank", "noopener,noreferrer");
+
+    // 3. Close modal and tidy up
+    closeMultiModal();
+    selected = [];
+    renderAll();
   }
 
   function onMCashClicked() {
